@@ -91,3 +91,11 @@ create Table notifications(
     Foreign Key (tweet_id) REFERENCES tweets(tweet_id) on delete set null,
     Foreign Key (comment_id) REFERENCES comments(comment_id) on delete set null
 );
+create table follows(
+follower_id bigint not null,
+followee_id bigint not null,
+created_at timestamp default current_timestamp,
+primary key(follower_id,followee_id), 
+foreign key (follower_id) references users(user_id) on delete cascade,
+foreign key (followee_id) references users(user_id) on delete cascade
+);
