@@ -1,0 +1,8 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
+
+.splash-enter { opacity: 1; }
+.splash-exit { opacity: 1; transition: opacity 400ms ease; }
+.splash-exit-active { opacity: 0; }
