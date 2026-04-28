@@ -1,12 +1,9 @@
 import jwt from "jsonwebtoken";
 import { NextFunction, Request, Response } from "express";
-import { User,JwtPayload } from "../types";
+import { User,JwtPayload, AuthenticatedRequest } from "../types";
 import db from "../config/database";
 
-interface AuthenticatedRequest extends Request {
-  
-  user?: User;
-}
+
 
 export const verifyToken = async (
   req: AuthenticatedRequest,
