@@ -7,6 +7,8 @@ import userRoutes from "./routes/userRoutes";
 import tweetRoutes from "./routes/tweetRoutes";
 import interactionRoutes from "./routes/interactionRoutes";
 import followRoutes from "./routes/followRoutes";
+import { verifyToken } from "./middleware/verifyAuth";
+import { getUserFeed } from "./controllers/userController";
 
 const PORT = process.env.PORT;
 const app: Application = express();
@@ -21,6 +23,7 @@ app.use("/api/tweets", tweetRoutes);
 app.use("/api/interaction", interactionRoutes);
 app.use("/api/comments",interactionRoutes);
 app.use("/api/follows",followRoutes);
+app.get("/api/feed",verifyToken, getUserFeed)
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello, TypeScript + Express!");
