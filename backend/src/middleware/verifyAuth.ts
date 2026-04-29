@@ -29,7 +29,7 @@ export const verifyToken = async (
       `select * from users where user_id = ?`,
       [decode.id],
     );
-    console.log(user);
+    
     if (user.length === 0) {
       return res.status(400).json({ message: "No user data found" });
     }

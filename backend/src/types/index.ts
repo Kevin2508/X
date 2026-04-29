@@ -34,3 +34,11 @@ export interface Tweets extends RowDataPacket {
     media:string,
     created_at: string
 }
+
+export interface Comments extends RowDataPacket {
+  comment_id:number,
+  user_id:number,
+  tweet_id:number,
+  content:string,
+  parent_comment_id?:number
+}
