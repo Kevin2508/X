@@ -6,6 +6,6 @@ const router = Router();
 
 router.post("/",verifyToken, upload.single('file'), createTweet)
 router.get("/", getAllTweets)
-router.get("/:id", getSpecificTweet);
+router.get("/:id",verifyToken ,getSpecificTweet);
 router.get("/user/:id",getUserTweets);
 export default router;

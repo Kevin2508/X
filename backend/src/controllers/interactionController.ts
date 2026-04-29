@@ -232,3 +232,57 @@ export const dislikeComment = async(req:AuthenticatedRequest,res:Response)=>{
     return res.status(400).json({ message: error });
   }
 }
+
+// REPLY ON A COMMENT
+
+export const commentsReply = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const actor_id = req.user?.user_id;
+    const comment_parent_id = req.params.comment_id;
+    const comment = req.body.comment;
+    const result = db.query<ResultSetHeader>(
+      `insert into comments(user_id,tweet_id,content,parent_comment_id) values(?,?,?,?)`,
+      [actor_id, null, comment, comment_parent_id],
+    );
+
+    const [user] = await db.query<User[]>(
+      `select user_id from comments where comment_id = ?`,
+      [comment_parent_id],
+    );
+    const user_id = user[0].user_id;
+
+    const content = `user:${user_id} replied to your comment`;
+    const notification_type = "reply";
+
+    const [insertNotification] = await db.query<ResultSetHeader>(
+      `insert into notifications(user_id,actor_id,tweet_id,comment_id,content,notification_type, is_read) values(?,?,?,?,?,?,?)`,
+      [user_id, actor_id, null,comment_parent_id, content, notification_type, false],
+    );
+    return res.status(200).json({ message: "Replied successful" });
+  } catch (error) {
+    return res.status(400).json({ error });
+  }
+};
+
+
+// DELETE A REPLY
+
+export const deleteReply = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const actor_id = req.user?.user_id;
+    const comment_id = req.params.comment_id;
+    const result = db.query<ResultSetHeader>(
+      `delete from comments where comment_id = ? `,
+      [comment_id],
+    );
+    const notification_type = "reply";
+
+    const [insertNotification] = await db.query<ResultSetHeader>(
+      `delete from notifications where actor_id = ? and comment_id = ? and notification_type = ?`,
+      [actor_id, comment_id, notification_type],
+    );
+    return res.status(200).json({ message: "Reply deleted successful" });
+  } catch (error) {
+    return res.status(400).json(error);
+  }
+};
