@@ -4,8 +4,10 @@ import {
   comment,
   deleteComment,
   deleteRetweet,
+  dislikeComment,
   dislikeTweet,
   getComment,
+  likeComment,
   likeTweet,
   retweet,
 } from "../controllers/interactionController";
@@ -19,4 +21,6 @@ router.delete("/:tweet_id/retweet", verifyToken, deleteRetweet);
 router.post("/:tweet_id/comment", verifyToken, comment);
 router.get("/:tweet_id/comment", getComment);
 router.delete("/:comment_id", verifyToken, deleteComment);
+router.post("/:comment_id/comment/like",verifyToken,likeComment);
+router.delete("/:comment_id/comment/like",verifyToken,dislikeComment);
 export default router;
