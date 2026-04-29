@@ -1,26 +1,8 @@
-import React from "react";
-
 export default function Splash() {
   return (
-    <div style={styles.container}>
-      <img src="../../src/assets/favicon.svg" alt="Logo" style={styles.logo} />
-      
+    <div className="fixed inset-0 bg-black flex flex-col items-center justify-center z-9999">
+      <div className="text-6xl font-bold mb-4 text-white animate-pulse">𝕏</div>
+      <p className="text-gray-500 text-sm">Loading your experience...</p>
     </div>
   );
 }
-
-const styles: { container: React.CSSProperties; logo: React.CSSProperties; title: React.CSSProperties } = {
-  container: {
-    position: "fixed",
-    inset: 0,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    background: "#fff",
-    color: "#000000",
-    zIndex: 9999,
-  },
-  logo: { width: 120, height: 120, marginBottom: 16 },
-  title: { fontSize: 24, margin: 0 },
-};

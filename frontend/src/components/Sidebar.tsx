@@ -1,76 +1,78 @@
-import React from "react";
-import { cn } from "@/lib/utils";
-import { Home, LayoutDashboard, Link, Settings } from "lucide-react";
+import type React from 'react';
+import { Heart, Home, Mail, Bookmark, Users } from 'lucide-react';
+import { useRouter } from '../context/routerContext';
+import { useAuth } from '../context/authContext';
 
-type NavItem = { href: string; label: string; icon?: React.ReactNode };
+const SidebarIcon = ({
+  icon: Icon,
+  label,
+  onClick,
+}: {
+  icon: React.ComponentType<{ size: number }>;
+  label: string;
+  onClick?: () => void;
+}) => (
+  <button
+    onClick={onClick}
+    className="flex items-center gap-4 px-4 py-3 text-xl rounded-full hover:bg-gray-900 transition-colors w-full"
+  >
+    <Icon size={24} />
+    <span className="hidden lg:inline">{label}</span>
+  </button>
+);
 
-const navItems: NavItem[] = [
-  { href: "/", label: "Home", icon: <Home className="w-5 h-5" /> },
-  { href: "/dashboard", label: "Dashboard", icon: <LayoutDashboard className="w-5 h-5" /> },
-  { href: "/settings", label: "Settings", icon: <Settings className="w-5 h-5" /> },
-];
+export default function Sidebar() {
+  const { navigate } = useRouter();
+  const { logout } = useAuth();
 
-export function Sidebar({ className }: { className?: string }) {
-  const [open, setOpen] = React.useState(false);
+  const handleLogout = () => {
+    logout();
+    navigate('login');
+  };
 
   return (
-    <>
-      {/* Mobile toggle */}
-      <button
-        aria-label="Toggle menu"
-        onClick={() => setOpen((v) => !v)}
-        className="md:hidden p-2 m-2 rounded bg-black text-white"
-      >
-        {open ? "Close" : "Menu"}
-      </button>
+    <aside className="w-64 hidden md:flex flex-col border-r border-gray-700 px-2 py-4">
+      {/* Logo */}
+      <div className="mb-8 px-4">
+        <button
+          onClick={() => navigate('home')}
+          className="text-2xl font-bold hover:opacity-80 transition-opacity"
+        >
+          𝕏
+        </button>
+      </div>
 
-      {/* Overlay for mobile when open */}
-      <div
-        className={cn(
-          "fixed inset-0 bg-black/50 z-20 transition-opacity md:hidden",
-          open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        )}
-        onClick={() => setOpen(false)}
-        aria-hidden={!open}
-      />
+      {/* Navigation */}
+      <nav className="flex-1 space-y-2">
+        <SidebarIcon icon={Home} label="Home" onClick={() => navigate('home')} />
+        <SidebarIcon icon={Users} label="Explore" onClick={() => navigate('explore')} />
+        <SidebarIcon icon={Mail} label="Messages" />
+        <SidebarIcon icon={Bookmark} label="Bookmarks" />
+        <SidebarIcon icon={Heart} label="Notifications" onClick={() => navigate('notifications')} />
+      </nav>
 
-      <aside
-        className={cn(
-          "fixed top-0 left-0 h-full z-30 w-64 bg-black text-white transform transition-transform",
-          // visible on md and up; slide in/out on mobile
-          open ? "translate-x-0" : "-translate-x-full md:translate-x-0",
-          className
-        )}
-      >
-        <div className="h-16 flex items-center px-4 border-b border-white/10">
-          <span className="font-semibold text-lg">App Name</span>
+      {/* Post Button and User Menu */}
+      <div className="space-y-4 border-t border-gray-700 pt-4">
+        <button className="w-full bg-blue-600 text-white rounded-full py-3 text-lg font-bold hover:bg-blue-700 transition-colors">
+          Post
+        </button>
+
+        <div
+          onClick={handleLogout}
+          className="p-3 rounded-full hover:bg-gray-900 transition-colors cursor-pointer"
+        >
+          <div className="flex items-center justify-between">
+            <div className="hidden lg:flex items-center gap-2">
+              <div className="w-10 h-10 bg-gray-700 rounded-full" />
+              <div className="text-sm">
+                <p className="font-bold">Your Name</p>
+                <p className="text-gray-500">@yourhandle</p>
+              </div>
+            </div>
+            <div className="text-red-500 text-sm font-bold">Logout</div>
+          </div>
         </div>
-
-        <nav className="p-4 space-y-1">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex items-center gap-3 px-3 py-2 rounded hover:bg-white/10 transition-colors"
-              onClick={() => setOpen(false)}
-            >
-              {item.icon && <span className="w-5 h-5 text-white">{item.icon}</span>}
-              <span className="text-sm">{item.label}</span>
-            </Link>
-          ))}
-        </nav>
-
-        <div className="mt-auto p-4 border-t border-white/10">
-          <button className="w-full text-left px-3 py-2 rounded hover:bg-white/10">
-            Log out
-          </button>
-        </div>
-      </aside>
-
-      {/* Page content spacer for md+ so content isn't hidden */}
-      <div className="md:pl-64" />
-    </>
+      </div>
+    </aside>
   );
 }
-
-export default Sidebar;
