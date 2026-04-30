@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAuth } from "@/context/AuthContext";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 interface signUpBody {
@@ -11,6 +12,8 @@ interface signUpBody {
   email: string;
   password: string;
   captcha: unknown;
+  user:any;
+  token:string;
 }
 export default function RegisterPage() {
   const [display_name, setdisplay_name] = useState("");
@@ -18,12 +21,12 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
+  
   const [imageCaptcha, setImageCaptcha] = useState("");
   const [textCaptcha, setTextCaptcha] = useState("");
   const [captchaFetchTime, setCaptchaFetchTime] = useState<number>(0);
   const navigate = useNavigate();
+  const {login} = useAuth();
 
   const fetchCaptcha = async (refresh = false) => {
     try {
@@ -48,7 +51,6 @@ export default function RegisterPage() {
     e.preventDefault();
     const elapsedTime = (Date.now() - captchaFetchTime) / 1000;
     if (elapsedTime < 3) {
-      setError("Please verify again");
       fetchCaptcha();
       setTextCaptcha("");
       return;
@@ -57,7 +59,7 @@ export default function RegisterPage() {
     if (textCaptcha === correctCaptcha) {
       console.log("Login successs");
     } else {
-      setError("Incorrect captcha, please try again.");
+  
       fetchCaptcha();
     }
     const formData = {
@@ -73,14 +75,14 @@ export default function RegisterPage() {
       const result = res;
       console.log(result);
       if (result) {
-        setSuccess(true);
         setEmail("");
         setuser_name("");
         setdisplay_name("");
         
         setPassword("");
         setTextCaptcha("");
-
+const {user,token} = res.data;
+login(user,token);
         navigate("/login");
       } else {
         fetchCaptcha();

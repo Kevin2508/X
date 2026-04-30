@@ -1,7 +1,8 @@
 import type React from 'react';
 import { Heart, Home, Mail, Bookmark, Users } from 'lucide-react';
-import { useRouter } from '../context/routerContext';
-import { useAuth } from '../context/authContext';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
+
 
 const SidebarIcon = ({
   icon: Icon,
@@ -22,7 +23,7 @@ const SidebarIcon = ({
 );
 
 export default function Sidebar() {
-  const { navigate } = useRouter();
+  const navigate  = useNavigate();
   const { logout } = useAuth();
 
   const handleLogout = () => {

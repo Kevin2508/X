@@ -6,6 +6,6 @@ import { authCaptcha } from "../middleware/captcha";
 const router = express.Router();
 
 router.post("/signup",[checkDuplicateSignUp,verifyCaptcha], signup);
-router.post("/signin", verifyCaptcha,signin);
+router.post("/signin",signin);
 router.get('/captcha',authCaptcha);
 export default router;
