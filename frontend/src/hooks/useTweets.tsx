@@ -1,11 +1,6 @@
 import API from "@/api/axios";
 import { useState } from "react";
 
-interface createTweetPayload {
-  content: string;
-  file?: File;
-}
-
 export function useTweets() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -39,5 +34,21 @@ export function useTweets() {
       setLoading(false);
     }
   };
-  return { createTweet, loading, error };
+
+  const getTweets = async()=>{
+    setLoading(true);
+    setError("");
+    try {
+      const res = await API.get("/feed/");
+      
+      return res.data;
+    } catch (err) {
+      const message = err.response?.data?.message || "Failed to post tweet";
+      setError(message);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }
+  return { createTweet, getTweets, loading, error };
 }
