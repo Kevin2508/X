@@ -3,13 +3,15 @@ import { Input } from "./ui/input";
 
 export function RightPanel() {
   return (
-    <div className="p-4 space-y-4">
-      <Input placeholder="Search" />
-      <Card className="p-4">
-        <h2 className="font-semibold mb-2">Trends</h2>
-        <p className="text-sm text-gray-500">#React</p>
-        <p className="text-sm text-gray-500">#Flutter</p>
-        <p className="text-sm text-gray-500">#AI</p>
+    <div className="p-4 space-y-4 border-l-2 border-black">
+      <Input placeholder="Search..." className="comic-input border-2 border-black font-black uppercase" />
+      <Card className="p-4 comic-card comic-shadow border-2 border-black">
+        <h2 className="font-black text-xl uppercase tracking-wider border-b-2 border-black pb-2 mb-3">📈 TRENDS</h2>
+        <div className="space-y-2 font-black uppercase">
+          <p className="text-sm cursor-pointer hover:underline">#React</p>
+          <p className="text-sm cursor-pointer hover:underline">#Flutter</p>
+          <p className="text-sm cursor-pointer hover:underline">#AI</p>
+        </div>
       </Card>
     </div>
   );

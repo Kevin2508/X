@@ -1,3 +1,124 @@
-body{
-    background-color: white;
+/* Comic Book Theme - Black & White */
+
+:root {
+  --comic-black: #000000;
+  --comic-white: #ffffff;
+  --comic-border: 3px solid var(--comic-black);
+  --comic-border-thin: 2px solid var(--comic-black);
+  --comic-border-thick: 4px solid var(--comic-black);
+}
+
+* {
+  border-radius: 0 !important;
+}
+
+body {
+  background-color: var(--comic-white);
+  color: var(--comic-black);
+  font-family: Arial, sans-serif;
+  font-weight: 600;
+}
+
+/* Comic panels with thick borders */
+.comic-panel {
+  border: var(--comic-border);
+  background-color: var(--comic-white);
+  box-shadow: 3px 3px 0px var(--comic-black);
+  padding: 1rem;
+}
+
+/* Comic speech bubble */
+.comic-bubble {
+  border: var(--comic-border);
+  background-color: var(--comic-white);
+  padding: 1rem;
+  position: relative;
+  box-shadow: 2px 2px 0px var(--comic-black);
+}
+
+/* Action effect similar to comic action lines */
+.comic-action {
+  position: relative;
+}
+
+.comic-action::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 12px;
+  background: repeating-linear-gradient(
+    45deg,
+    var(--comic-black),
+    var(--comic-black) 2px,
+    transparent 2px,
+    transparent 4px
+  );
+}
+
+/* Comic button style with motion lines */
+.comic-button {
+  border: var(--comic-border);
+  background-color: var(--comic-black);
+  color: var(--comic-white);
+  padding: 0.75rem 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 3px 3px 0px var(--comic-black);
+  transition: all 0.05s ease;
+}
+
+.comic-button:hover {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0px var(--comic-black);
+}
+
+.comic-button:active {
+  transform: translate(3px, 3px);
+  box-shadow: 1px 1px 0px var(--comic-black);
+}
+
+/* Comic card */
+.comic-card {
+  border: var(--comic-border-thin);
+  background-color: var(--comic-white);
+  box-shadow: 2px 2px 0px var(--comic-black);
+}
+
+/* Comic input */
+.comic-input {
+  border: var(--comic-border-thin);
+  background-color: var(--comic-white);
+  color: var(--comic-black);
+  padding: 0.5rem 0.75rem;
+  font-weight: 600;
+}
+
+.comic-input:focus {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--comic-black);
+}
+
+/* Comic separator/divider */
+.comic-divider {
+  border-top: var(--comic-border-thick);
+  margin: 1rem 0;
+}
+
+/* Comic title style */
+.comic-title {
+  font-size: 1.875rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  border-bottom: var(--comic-border-thick);
+  padding-bottom: 0.5rem;
+}
+
+/* Comic text emphasis */
+.comic-emphasis {
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }

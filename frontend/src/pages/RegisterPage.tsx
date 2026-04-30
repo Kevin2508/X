@@ -94,51 +94,51 @@ login(user,token);
   };
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="min-h-screen flex items-center justify-center bg-white px-4">
         <div className="grid md:grid-cols-2 gap-8 max-w-5xl w-full items-center">
           {/* Left Section */}
           <div className="hidden md:flex flex-col justify-center">
-            <h1 className="text-5xl font-bold text-blue-500 mb-4">
-              Join Twitter Clone
+            <h1 className="text-5xl font-black text-black mb-4 uppercase tracking-wider border-b-4 border-black pb-4">
+              Join Twitter
             </h1>
-            <p className="text-gray-600 text-lg">
-              Create an account and start sharing your thoughts.
+            <p className="text-black text-lg font-bold mt-4">
+              🚀 Create an account and start<br/>sharing your thoughts.
             </p>
           </div>
           <form>
             {/* Right Section */}
-            <Card className="w-full shadow-xl rounded-2xl">
+            <Card className="w-full comic-shadow border-2 border-black">
               <CardHeader>
-                <CardTitle className="text-2xl">Create account</CardTitle>
+                <CardTitle className="text-2xl uppercase font-black tracking-wider">📝 CREATE ACCOUNT</CardTitle>
               </CardHeader>
 
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Display Name</Label>
+                  <Label className="font-black uppercase">📛 Display Name</Label>
                   <Input type="text" placeholder="Enter your display name" value={display_name} onChange={(e) => setdisplay_name(e.target.value)}/>
                 </div>
                 <div className="space-y-2">
-                  <Label>user_name</Label>
-                  <Input type="text" placeholder="Enter your user_name" onChange={(e) => setuser_name(e.target.value)} value={user_name}/>
+                  <Label className="font-black uppercase">👤 Username</Label>
+                  <Input type="text" placeholder="Enter your username" onChange={(e) => setuser_name(e.target.value)} value={user_name}/>
                 </div>
                 <div className="space-y-2">
-                  <Label>Email</Label>
+                  <Label className="font-black uppercase">📧 Email</Label>
                   <Input type="email" placeholder="Enter your email" value={email} onChange={(e) => setEmail(e.target.value)}/>
                 </div>
                 <div className="space-y-2">
-                  <Label>Password</Label>
+                  <Label className="font-black uppercase">🔒 Password</Label>
                   <Input type="password" placeholder="Create password" value={password} onChange={(e) => setPassword(e.target.value)}/>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Confirm Password</Label>
+                  <Label className="font-black uppercase">✓ Confirm Password</Label>
                   <Input type="password" placeholder="Confirm password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}/>
                 </div>
 
                 {/* Captcha */}
-                <div className="space-y-2">
+                <div className="space-y-2 border-2 border-black p-3">
                   <div dangerouslySetInnerHTML={{ __html: imageCaptcha }} />
-                  <span onClick={refreshCaptcha}>
+                  <span onClick={refreshCaptcha} className="cursor-pointer hover:opacity-70">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       x="0px"
@@ -148,7 +148,7 @@ login(user,token);
                       viewBox="0,0,256,256"
                     >
                       <g
-                        fill="#ffffff"
+                        fill="#000000"
                         fill-rule="nonzero"
                         stroke="none"
                         stroke-width="1"
@@ -168,31 +168,26 @@ login(user,token);
                       </g>
                     </svg>
                   </span>
-                  <Label>Captcha</Label>
+                  <Label className="font-black uppercase block mt-2">🔐 Captcha</Label>
                   <Input
                     onChange={(e) => {
                       setTextCaptcha(e.target.value);
                     }}
                     placeholder="Enter captcha"
                   />
-                  <div className="bg-gray-200 text-center py-2 rounded-md text-sm">
+                  <div className="bg-black text-white text-center py-2 font-black text-sm border-2 border-black">
                     8K2L4
                   </div>
                 </div>
 
-                {/* Forgot Password */}
-                <div className="text-right text-sm text-blue-500 cursor-pointer">
-                  Forgot Password?
-                </div>
-
-                <Button onClick={handleSubmit} className="w-full">
-                  Register
+                <Button onClick={handleSubmit} className="w-full comic-btn uppercase font-black">
+                  REGISTER
                 </Button>
 
-                <div className="text-center text-sm text-gray-500">
+                <div className="text-center text-sm text-black font-bold border-t-2 border-black pt-4">
                   Already have an account?{" "}
-                  <span className="text-blue-500 cursor-pointer">
-                    <Link to="/login">Login</Link>
+                  <span className="text-black cursor-pointer font-black hover:underline">
+                    <Link to="/login">LOGIN</Link>
                   </span>
                 </div>
               </CardContent>
