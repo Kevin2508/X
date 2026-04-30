@@ -1,26 +1,32 @@
 import "./App.css";
 import LoginPage from "./pages/LoginPage";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import  RegisterPage  from "./pages/RegisterPage";
+import RegisterPage from "./pages/RegisterPage";
 import { HomePage } from "./pages/HomePage";
 import { AuthProvider } from "./context/AuthContext";
-import { ProtectedRoute } from "./routes/protectedRoutes";
+import { ProtectedRoute, PublicRoute } from "./routes/protectedRoutes";
+
 
 function App() {
   return (
-        <>
-        <BrowserRouter>
+    <>
+      <BrowserRouter>
         <AuthProvider>
-      <Routes>
-        <Route path="/" element={<ProtectedRoute><HomePage/></ProtectedRoute>}/>
-        <Route path="/home" element={<ProtectedRoute><HomePage/></ProtectedRoute>}/>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-      </Routes>
-      </AuthProvider>
-    </BrowserRouter>
-        </>
-     
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+            <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+            
+            {/* Protected Routes */}
+            <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+            <Route path="/home" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+            
+            {/* Catch all */}
+            <Route path="*" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+          </Routes>
+        </AuthProvider>
+      </BrowserRouter>
+    </>
   );
 }
 

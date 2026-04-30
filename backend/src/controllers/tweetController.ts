@@ -8,7 +8,7 @@ export const createTweet = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const user_id = req.user?.user_id;
     const content = req.body.content;
-    const files = req.file;
+    let files = req.file;
     if (!content) {
       return res.status(400).json({ message: "Content required" });
     }
@@ -17,8 +17,9 @@ export const createTweet = async (req: AuthenticatedRequest, res: Response) => {
       [user_id, content],
     );
     const tweet_id = result.insertId;
-
+    let path = "";
     if (files) {
+      path = files.path;
       res.json({
         message: "File uploaded successfully",
         file: {
@@ -26,8 +27,13 @@ export const createTweet = async (req: AuthenticatedRequest, res: Response) => {
           originalName: files.originalname,
           size: files.size,
           mimetype: files.mimetype,
-          path: files.path,
+          path: path,
         },
+      });
+    } else {
+      path = "";
+      res.json({
+        message: "tweet uploaded successfully",
       });
     }
     let media_type = "";
@@ -38,7 +44,7 @@ export const createTweet = async (req: AuthenticatedRequest, res: Response) => {
     }
     const [insertMedia] = await db.query<ResultSetHeader>(
       `insert into tweet_media(tweet_id,media_type,media) values(?,?,?) `,
-      [tweet_id,media_type,files?.path],
+      [tweet_id, media_type, path],
     );
   } catch (error) {
     console.log(error);
@@ -46,22 +52,22 @@ export const createTweet = async (req: AuthenticatedRequest, res: Response) => {
 };
 
 // GET ALL TWEETS
-export const getAllTweets = async(req:Request, res:Response)=>{
-    try {
-        const [result] = await db.query<Tweets[]>(`select * from tweets left join tweet_media on tweets.tweet_id = tweet_media.tweet_id`)
+export const getAllTweets = async (req: Request, res: Response) => {
+  try {
+    const [result] = await db.query<Tweets[]>(`select * from tweets left join tweet_media on tweets.tweet_id = tweet_media.tweet_id`)
 
-        res.json(result);
-    } catch (error) {
-        console.log("error while getting all users:",error);
-    }
+    res.json(result);
+  } catch (error) {
+    console.log("error while getting all users:", error);
+  }
 }
 
 // GET SPECIFIC TWEET
-export const getSpecificTweet = async(req:AuthenticatedRequest, res:Response)=>{
-    try {
-        const id = req.params.id;
-        const user_id = req.user?.user_id
-        const [result] = await db.query<Tweets[]>(`
+export const getSpecificTweet = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const id = req.params.id;
+    const user_id = req.user?.user_id
+    const [result] = await db.query<Tweets[]>(`
            SELECT 
         t.tweet_id,
         t.content,
@@ -100,19 +106,19 @@ export const getSpecificTweet = async(req:AuthenticatedRequest, res:Response)=>{
       LEFT JOIN tweet_media m ON t.tweet_id = m.tweet_id
       WHERE t.tweet_id = ?
           
-          `, [user_id,user_id,id]);
+          `, [user_id, user_id, id]);
 
-        res.json(result);
-    } catch (error) {
-        console.log("error while getting specific tweet:",error);
-    }
+    res.json(result);
+  } catch (error) {
+    console.log("error while getting specific tweet:", error);
+  }
 }
 
 // GET USER TWEETS
-export const getUserTweets = async(req:Request,res:Response)=>{
-    try {
-        const id = req.params.id;
-        const [result] = await db.query<Tweets[]>(`SELECT 
+export const getUserTweets = async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id;
+    const [result] = await db.query<Tweets[]>(`SELECT 
         t.tweet_id,
         t.content,
         t.created_at,
@@ -198,10 +204,10 @@ export const getUserTweets = async(req:Request,res:Response)=>{
       LEFT JOIN tweet_media m ON t.tweet_id = m.tweet_id
       WHERE r.user_id = ?
 
-      ORDER BY created_at DESC`, [id,id,id,id,id,id]);
+      ORDER BY created_at DESC`, [id, id, id, id, id, id]);
 
-        res.json(result);
-    } catch (error) {
-        console.log("error while getting user tweet:",error);
-    }
+    res.json(result);
+  } catch (error) {
+    console.log("error while getting user tweet:", error);
+  }
 }

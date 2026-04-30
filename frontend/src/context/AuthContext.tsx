@@ -6,9 +6,9 @@ interface User {
   email: string;
   display_name: string;
   profile_image?: string;
-  cover_image?:string;
-  bio?:string,
-  date_of_birth?:string
+  cover_image?: string;
+  bio?: string;
+  date_of_birth?: string;
 }
 
 interface AuthContextType {
@@ -30,19 +30,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // On app load, restore user from localStorage if token exists
   useEffect(() => {
-    const savedToken = localStorage.getItem('auth_token');
-    const savedUser = localStorage.getItem('auth_user');
+    const savedToken = localStorage.getItem('token');
+    const savedUser = localStorage.getItem('user');
     
     if (savedToken && savedUser) {
-        try {
-            setTokenState(savedToken);
-            setUserState(JSON.parse(savedUser));
-        } catch (error) {
-            console.warn('Clearing corrupted auth data');
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('auth_user');
-      localStorage.clear(); 
-        }
+      try {
+        setTokenState(savedToken);
+        setUserState(JSON.parse(savedUser));
+      } catch (error) {
+        console.warn('Clearing corrupted auth data');
+        // Only remove auth-related items, not everything
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
     }
   }, []);
 
@@ -51,32 +51,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setTokenState(token);
     
     // Persist to localStorage (survive page refresh)
-    localStorage.setItem('auth_token', token);
-    localStorage.setItem('auth_user', JSON.stringify(user));
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(user));
   };
 
   const logout = () => {
     setUserState(null);
     setTokenState(null);
     
-    // Clear localStorage
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('auth_user');
+    // Clear only auth-related localStorage items
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
   };
 
   const setUser = (user: User) => {
     setUserState(user);
-    localStorage.setItem('auth_user', JSON.stringify(user));
+    localStorage.setItem('user', JSON.stringify(user));
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isAuthenticated: !!user, login, logout, setUser }}>
+    <AuthContext.Provider value={{ user, token, isAuthenticated: !!user && !!token, login, logout, setUser }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-// Custom hook to use the context (easier than useContext)
+// Custom hook to use the context
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {

@@ -23,7 +23,7 @@ app.use(
 );
 app.use(
   session({
-    secret: "your-secret-key", // Change this for production
+    secret: "kevin", // Change this for production
     resave: false,
     saveUninitialized: true,
     cookie:{
