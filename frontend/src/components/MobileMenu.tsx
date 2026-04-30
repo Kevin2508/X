@@ -15,11 +15,6 @@ export default function MobileMenu() {
     setIsOpen(false);
   };
 
-  const handleLogout = () => {
-    logout();
-    handleNavigation('login');
-  };
-
   return (
     <>
       {/* Mobile Menu Button */}
@@ -64,7 +59,10 @@ export default function MobileMenu() {
               </button>
               <div className="border-t border-gray-700 my-2" />
               <button
-                onClick={() => handleNavigation('login')}
+                onClick={() => {
+                  logout();
+                  handleNavigation('login');
+                }}
                 className="w-full text-left px-4 py-3 hover:bg-gray-900 rounded-lg transition-colors text-red-500 font-medium"
               >
                 🚪 Logout
