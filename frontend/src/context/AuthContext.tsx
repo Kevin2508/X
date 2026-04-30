@@ -2,10 +2,13 @@ import { createContext, useContext, useState, useEffect, type ReactNode } from '
 
 interface User {
   user_id: number;
-  username: string;
+  user_name: string;
   email: string;
   display_name: string;
   profile_image?: string;
+  cover_image?:string;
+  bio?:string,
+  date_of_birth?:string
 }
 
 interface AuthContextType {
@@ -31,8 +34,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const savedUser = localStorage.getItem('auth_user');
     
     if (savedToken && savedUser) {
-      setTokenState(savedToken);
-      setUserState(JSON.parse(savedUser));
+        try {
+            setTokenState(savedToken);
+            setUserState(JSON.parse(savedUser));
+        } catch (error) {
+            console.warn('Clearing corrupted auth data');
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
+      localStorage.clear(); 
+        }
     }
   }, []);
 

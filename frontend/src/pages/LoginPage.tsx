@@ -25,6 +25,7 @@ export default function LoginPage() {
   const { login } = useAuth();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
+  const [error,setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -37,7 +38,10 @@ export default function LoginPage() {
     try {
       const res = await API.post<SignInBody>("/auth/signin", formData);
       const { user, token } = res.data;
-
+      if (!user || !token) {
+        setError("Invalid response from server");
+        return;
+      }
       const result = res;
       console.log(result);
       if (result) {
@@ -46,10 +50,12 @@ export default function LoginPage() {
         setPassword("");
 
         login(user, token);
-        navigate("/");
+        navigate("/home");
       }
-    } catch (error) {
-      console.log(error);
+    } catch (err) {
+      const errorMsg = err.response?.data?.message || "Login failed";
+      setError(errorMsg);
+      console.error("Login error:", err);
     }
     // const result = await registerUser({user_name:user_name, email:email, password:password});
   };

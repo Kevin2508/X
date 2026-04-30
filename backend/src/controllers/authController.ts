@@ -70,7 +70,7 @@ export const signin = async (req: Request, res: Response) => {
     if (token) {
       return res.status(200).json({
         token: token,
-        message: "signin success",
+        user:user,
       });
     }
   } catch (error) {
