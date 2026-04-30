@@ -9,10 +9,29 @@ import interactionRoutes from "./routes/interactionRoutes";
 import followRoutes from "./routes/followRoutes";
 import { verifyToken } from "./middleware/verifyAuth";
 import { getUserFeed } from "./controllers/userController";
+import cors from 'cors';
+import session from "express-session";
 
 const PORT = process.env.PORT;
 const app: Application = express();
 
+app.use(
+  cors({
+    origin: `http://localhost:5173`,
+    credentials:true
+  }),
+);
+app.use(
+  session({
+    secret: "your-secret-key", // Change this for production
+    resave: false,
+    saveUninitialized: true,
+    cookie:{
+      secure:false,
+      sameSite:"lax",
+    }
+  }),
+);
 // ROUTES
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

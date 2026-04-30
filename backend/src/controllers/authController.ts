@@ -11,30 +11,20 @@ export const signup = async (req: Request, res: Response) => {
       user_name,
       email,
       password,
-      country,
-      profile_image,
-      cover_image,
-      bio,
-      date_of_birth,
-      is_verified,
+      captcha,
     } = req.body;
-
+    console.log(display_name);
     const hashed_password = bcrypt.hashSync(password, 8);
     console.log(hashed_password);
 
     const [result] = await db.query<ResultSetHeader>(
-      `INSERT INTO users (display_name, user_name, email, password, country, profile_image, cover_image, bio, date_of_birth,is_verified) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?)`,
+      `INSERT INTO users (display_name, user_name, email, password) VALUES (?, ?, ?, ?)`,
       [
         display_name,
         user_name,
         email,
         hashed_password,
-        country,
-        profile_image,
-        cover_image,
-        bio,
-        date_of_birth,
-        is_verified,
+       
       ],
     );
 

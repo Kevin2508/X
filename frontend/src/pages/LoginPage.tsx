@@ -1,142 +1,96 @@
-import { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import { useRouter } from '../context/routerContext';
-import { useAuth } from '../context/authContext';
-import { dummyUsers } from '../lib/dummyData';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Link } from "react-router-dom";
+import { useState } from "react";
+import API from "@/api/axios";
+
+interface SignInBody {
+  identifier: string;
+  password: string;
+  
+}
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
-  const { navigate } = useRouter();
-  const { login } = useAuth();
-
-  const handleLogin = async (e: React.FormEvent) => {
+  const [identifier, setIdentifier] = useState("");
+    const [password, setPassword] = useState("");
+  
+    const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setLoading(true);
+    
+    
+    const formData = {
+      identifier,
+      password,
+      
+    };
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      const res = await API.post<SignInBody>("/auth/signin", formData);
+      const result = res;
+      console.log(result);
+      if (result) {
+        setIdentifier("");
+        
+        
+        setPassword("");
 
-      // Demo: Accept any email/password, login with first dummy user
-      if (email && password) {
-        const user = {
-          user_id: dummyUsers[0].user_id,
-          user_name: dummyUsers[0].user_name,
-          email: dummyUsers[0].email,
-          display_name: dummyUsers[0].display_name,
-          profile_image: dummyUsers[0].profile_image,
-        };
-        login(user);
-        navigate('home');
-      } else {
-        setError('Please fill in all fields');
+   
       }
-    } catch {
-      setError('Login failed. Please try again.');
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.log(error);
     }
+    // const result = await registerUser({user_name:user_name, email:email, password:password});
   };
-
-  return (
-    <div className="min-h-screen bg-black flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="mb-8 text-center">
-          <div className="text-4xl font-bold mb-2">𝕏</div>
-          <h1 className="text-3xl font-bold">Welcome back</h1>
+  
+    return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="grid md:grid-cols-2 gap-8 max-w-5xl w-full items-center">
+        {/* Left Section */}
+        <div className="hidden md:flex flex-col justify-center">
+          <h1 className="text-5xl font-bold text-blue-500 mb-4">Twitter</h1>
+          <p className="text-gray-600 text-lg">
+            Connect with friends and the world around you.
+          </p>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleLogin} className="space-y-4">
-          {error && (
-            <div className="bg-red-900/20 border border-red-800 rounded-lg p-3 text-red-400 text-sm">
-              {error}
+        {/* Right Section */}
+        <Card className="w-full shadow-xl rounded-2xl">
+          <CardHeader>
+            <CardTitle className="text-2xl">Sign in</CardTitle>
+            <CardDescription>
+              Enter your credentials to access your account
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <Input type="email" placeholder="Enter your email" />
             </div>
-          )}
 
-          {/* Email */}
-          <div className="relative">
-            <label className="block text-sm font-medium mb-2">Email</label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-3 text-gray-500" size={20} />
-              <input
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-gray-900 border border-gray-700 rounded-lg pl-10 pr-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
-              />
+            <div className="space-y-2">
+              <Label>Password</Label>
+              <Input type="password" placeholder="Enter your password" />
             </div>
-          </div>
 
-          {/* Password */}
-          <div className="relative">
-            <label className="block text-sm font-medium mb-2">Password</label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-3 text-gray-500" size={20} />
-              <input
-                type={showPassword ? 'text' : 'password'}
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-gray-900 border border-gray-700 rounded-lg pl-10 pr-10 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-3 text-gray-500 hover:text-gray-400"
-              >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
+            {/* Forgot Password */}
+            <div className="text-right text-sm text-blue-500 cursor-pointer">
+              Forgot Password?
             </div>
-          </div>
 
-          {/* Forgot Password Link */}
-          <button
-            type="button"
-            onClick={() => navigate('forgot-password')}
-            className="text-blue-500 text-sm hover:underline"
-          >
-            Forgot password?
-          </button>
+            <Button className="w-full">Login</Button>
 
-          {/* Login Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white font-bold py-3 rounded-full hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-6"
-          >
-            {loading ? 'Logging in...' : 'Log in'}
-          </button>
-        </form>
-
-        {/* Divider */}
-        <div className="flex items-center gap-4 my-6">
-          <div className="flex-1 h-px bg-gray-700" />
-          <span className="text-gray-500 text-sm">Don't have an account?</span>
-          <div className="flex-1 h-px bg-gray-700" />
-        </div>
-
-        {/* Sign Up Link */}
-        <button
-          onClick={() => navigate('signup')}
-          className="w-full border border-gray-700 text-blue-500 font-bold py-3 rounded-full hover:bg-gray-900/50 transition-colors"
-        >
-          Create account
-        </button>
-
-        {/* Demo Credentials */}
-        <div className="mt-8 p-4 bg-gray-900 rounded-lg text-center text-sm text-gray-400">
-          <p>Demo: Use any email & password to login</p>
-        </div>
+            <div className="text-center text-sm text-gray-500">
+              Don't have an account?{' '}
+              <span className="text-blue-500 cursor-pointer"><Link to={"/register"}>Sign Up</Link></span>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
 }
+

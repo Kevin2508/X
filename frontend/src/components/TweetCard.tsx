@@ -1,7 +1,7 @@
 import { Heart, MessageCircle, Repeat2, Share } from 'lucide-react';
 import type { Tweet } from '../types';
 import { formatTimeAgo } from '../lib/dummyData';
-import { useRouter } from '../context/routerContext';
+
 
 interface TweetCardProps {
   tweet: Tweet;
