@@ -39,6 +39,30 @@ function timeAgo(dateStr: string): string {
   });
 }
 
+function getMediaUrl(mediaPath: string | null | undefined): string | null {
+  if (!mediaPath) return null;
+
+  // If it's already a URL, return it
+  if (mediaPath.startsWith('http://') || mediaPath.startsWith('https://')) {
+    return mediaPath;
+  }
+
+  // If it's a local file path, extract filename and construct API URL
+  if (mediaPath.includes('uploads')) {
+    // Extract filename from path
+    // e.g., "E:\\My Projects\\X\\backend\\src\\uploads\\file-1777571813138-221684312.jpg"
+    // becomes "file-1777571813138-221684312.jpg"
+    const filename = mediaPath.split(/[\\/]/).pop();
+    if (filename) {
+      // Construct full URL from your API base
+      const apiBase = 'http://localhost:3000';
+      return `${apiBase}/uploads/${filename}`;
+    }
+  }
+
+  return null;
+}
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function TweetCard({
@@ -74,6 +98,7 @@ export function TweetCard({
     setRetweets((prev) => (retweeted ? prev - 1 : prev + 1));
     onRetweet?.();
   };
+  const mediaUrl = getMediaUrl(media);
 
   const initials: string = (display_name || user_name || "?")[0].toUpperCase();
 
@@ -117,9 +142,13 @@ export function TweetCard({
           {/* Media */}
           {media && media_type === "image" && (
             <img
-              src={media}
+              src={mediaUrl || ""}
               alt="tweet media"
               className="mt-3 rounded-xl w-full max-h-72 object-cover border border-gray-200"
+              onError={(e) => {
+                console.error("Failed to load image:", mediaUrl);
+                (e.target as HTMLImageElement).style.display = "none";
+              }}
             />
           )}
 
