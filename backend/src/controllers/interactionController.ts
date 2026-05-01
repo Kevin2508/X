@@ -151,11 +151,50 @@ export const comment = async (req: AuthenticatedRequest, res: Response) => {
 export const getComment = async (req: Request, res: Response) => {
   try {
     const tweet_id = req.params.tweet_id;
-    const [result] = await db.query<Comments[]>(
-      `select * from comments where tweet_id = ?`,
+    const [comments] = await db.query<any[]>(
+      `SELECT
+c.comment_id,
+c.content,
+c.created_at,
+u.user_name,
+u.display_name,
+u.profile_image
+FROM comments c
+JOIN users u ON c.user_id = u.user_id
+WHERE c.tweet_id = ?
+AND c.parent_comment_id IS NULL
+ORDER BY c.created_at DESC
+`,
       [tweet_id],
     );
-    return res.status(200).json(result);
+
+    // Fetch nested replies for each comment
+    const commentsWithReplies = await Promise.all(
+      comments.map(async (comment) => {
+        const [replies] = await db.query<any[]>(
+          `SELECT
+c.comment_id,
+c.content,
+c.created_at,
+u.user_name,
+u.display_name,
+u.profile_image,
+c.parent_comment_id
+FROM comments c
+JOIN users u ON c.user_id = u.user_id
+WHERE c.parent_comment_id = ?
+ORDER BY c.created_at ASC
+`,
+          [comment.comment_id],
+        );
+        return {
+          ...comment,
+          replies: replies || [],
+        };
+      }),
+    );
+
+    return res.status(200).json(commentsWithReplies);
   } catch (error) {
     return res.status(400).json({ message: error });
   }
@@ -284,5 +323,43 @@ export const deleteReply = async (req: AuthenticatedRequest, res: Response) => {
     return res.status(200).json({ message: "Reply deleted successful" });
   } catch (error) {
     return res.status(400).json(error);
+  }
+};
+// GET REPLIES BY COMMENT ID
+export const getRepliesByCommentId = async (
+  req: AuthenticatedRequest,
+  res: Response,
+) => {
+  try {
+    const parentCommentId = Number(req.params.comment_id);
+
+    // check if parent comment exists
+    const [parentRows] = await db.query<any[]>(
+      `SELECT comment_id FROM comments WHERE comment_id = ?`,
+      [parentCommentId],
+    );
+    if (parentRows.length === 0) {
+      return res.status(404).json({
+        message: "Comment not found",
+      });
+    }
+
+    const [result] = await db.query<Comments[]>(
+      `SELECT
+c.comment_id,
+c.content,
+c.created_at,
+u.user_name,
+u.display_name,
+u.profile_image
+FROM comments c
+JOIN users u ON c.user_id = u.user_id
+WHERE c.parent_comment_id = ?
+ORDER BY c.created_at ASC`,
+      [parentCommentId],
+    );
+    res.status(200).json(result);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
   }
 };

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { AuthenticatedRequest, Tweets, User } from "../types";
 import db from "../config/database";
+import { ResultSetHeader } from "mysql2";
 export const getUser = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const user_id = req.user?.user_id;
@@ -38,9 +39,77 @@ export const getUserbyUserName = async (req: Request, res: Response) => {
     res.status(200).json({ error });
   }
 };
-export const updateProfile = async (req: Request, res: Response) => {};
-export const updateProfilePic = async (req: Request, res: Response) => {};
-export const updateCoverPic = async (req: Request, res: Response) => {};
+export const updateProfile = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const user_id = req.user?.user_id;
+    const { display_name, bio, country } = req.body;
+
+    if (!user_id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const updateData: any = {};
+    if (display_name !== undefined) updateData.display_name = display_name;
+    if (bio !== undefined) updateData.bio = bio;
+    if (country !== undefined) updateData.country = country;
+
+    const setClause = Object.keys(updateData)
+      .map((key) => `${key} = ?`)
+      .join(", ");
+    const values = [...Object.values(updateData), user_id];
+
+    const [result] = await db.query<ResultSetHeader>(
+      `UPDATE users SET ${setClause} WHERE user_id = ?`,
+      values
+    );
+
+    // Fetch updated user
+    const [updatedUser] = await db.query<User[]>(
+      `SELECT * FROM users WHERE user_id = ?`,
+      [user_id]
+    );
+
+    return res.status(200).json({
+      message: "Profile updated successfully",
+      result: updatedUser,
+    });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+// UPDATE COVER PIC
+ export const updateCoverPic= async (req:AuthenticatedRequest , res:Response) => {
+  console.log(req.file?.path);
+  console.log(req.user?.user_id);
+  
+  
+  try {
+    const user_id = req.user?.user_id;
+    
+    if (!user_id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const imageUrl = req.file?.path;
+
+    if (!imageUrl) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const [row] = await db.query<ResultSetHeader>(
+      `UPDATE users SET cover_image=? WHERE user_id=?`,
+      [imageUrl, user_id]
+    );
+
+    return res.status(200).json({
+      message: "Cover image updated successfully",
+      user_id: user_id,
+      url: imageUrl,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+};
 export const deleteUser = async (req: Request, res: Response) => {};
 export const getUserFeed = async (req: AuthenticatedRequest, res: Response) => {
   const user_id = req.user?.user_id;
@@ -142,3 +211,33 @@ export const getUserFeed = async (req: AuthenticatedRequest, res: Response) => {
     return res.status(400).json({ message: error });
   }
 };
+
+// get user profile image
+ export const updateProfilePic= async (req:AuthenticatedRequest , res:Response) => {
+  try {
+    const user_id = req.user?.user_id;
+
+    if (!user_id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const imageUrl = req.file?.path;
+
+    if (!imageUrl) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const [row] = await db.query<ResultSetHeader>(
+      `UPDATE users SET profile_image=? WHERE user_id=?`,
+      [imageUrl, user_id]
+    );
+
+    return res.status(200).json({
+      message: "Profile image updated successfully",
+      user_id: user_id,
+      url: imageUrl,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+}

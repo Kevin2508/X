@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Card } from "./ui/card";
 import { Heart, MessageCircle, Repeat2, Share } from "lucide-react";
 import API from "@/api/axios";
 import { TweetThreadDetail } from "./TweetThreadDetail";
+import { getProperImageUrl } from "@/utils/imageUtils";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -86,7 +88,8 @@ export function TweetCard({
   onRetweet,
   onComment,
 }: TweetCardProps) {
-const [showThread,setShowThread] = useState(false);
+  const navigate = useNavigate();
+  const [showThread,setShowThread] = useState(false);
   const [focusComment, setFocusComment] = useState(false);
   const [liked, setLiked] = useState<boolean>(isLiked);
   const [retweeted, setRetweeted] = useState<boolean>(isRetweeted);
@@ -145,21 +148,35 @@ const [showThread,setShowThread] = useState(false);
 
       <div className="flex gap-3">
         {/* Avatar */}
-        <Avatar className="border-2 border-black">
-          {profile_image && (
-            <AvatarImage src={profile_image} alt={display_name} />
-          )}
-          <AvatarFallback className="font-black uppercase text-lg">
-            {initials}
-          </AvatarFallback>
-        </Avatar>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/profile/${user_name}`);
+          }}
+          className="hover:opacity-80 transition-opacity duration-200"
+        >
+          <Avatar className="border-2 border-black">
+            {profile_image && (
+              <AvatarImage src={getProperImageUrl(profile_image) || ""} alt={display_name} />
+            )}
+            <AvatarFallback className="font-black uppercase text-lg">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+        </button>
 
         <div className="flex-1 min-w-0">
           {/* Header */}
           <div className="flex items-baseline gap-1 flex-wrap">
-            <span className="font-black uppercase text-base">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/profile/${user_name}`);
+              }}
+              className="font-black uppercase text-base hover:underline transition-all duration-200"
+            >
               {display_name || user_name}
-            </span>
+            </button>
             <span className="text-gray-500 text-sm">@{user_name}</span>
             <span className="text-gray-400 text-sm">·</span>
             <span className="text-gray-400 text-sm">{timeAgo(created_at)}</span>

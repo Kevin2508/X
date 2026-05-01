@@ -9,6 +9,7 @@ import {
   dislikeComment,
   dislikeTweet,
   getComment,
+  getRepliesByCommentId,
   likeComment,
   likeTweet,
   retweet,
@@ -26,5 +27,7 @@ router.delete("/:comment_id", verifyToken, deleteComment);
 router.post("/:comment_id/comment/like",verifyToken,likeComment);
 router.delete("/:comment_id/comment/like",verifyToken,dislikeComment);
 router.post("/:comment_id/reply",verifyToken,commentsReply);
-router.delete("/:comment_id/reply",verifyToken,deleteReply)
+router.delete("/:comment_id/reply",verifyToken,deleteReply);
+router.get("/:comment_id/reply",verifyToken,getRepliesByCommentId);
+
 export default router;

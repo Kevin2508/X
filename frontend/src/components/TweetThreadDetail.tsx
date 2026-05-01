@@ -1,18 +1,29 @@
 import { useState, useRef, useEffect } from "react";
 import { X, Heart, MessageCircle, Repeat2, Share, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { commentApi } from "@/api/commentApi";
+import { CommentItem } from "./CommentItem";
+import { getProperImageUrl } from "@/utils/imageUtils";
 
 type MediaType = "image" | "video" | null;
+
+interface Reply {
+  comment_id: number;
+  user_name: string;
+  display_name: string;
+  profile_image: string;
+  created_at: string;
+  content: string;
+}
 
 interface Comment {
   comment_id: number;
   user_name: string;
   display_name: string;
-  profile_image: string | null;
-  content: string;
+  profile_image: string;
   created_at: string;
-  like_count: number;
-  isLiked: boolean;
+  content: string;
+  replies?: Reply[];
 }
 
 interface TweetThreadDetailProps {
@@ -91,13 +102,45 @@ export function TweetThreadDetail({
 
   // Auto-focus comment textarea when opened from comment button
   useEffect(() => {
+    fetchComments();
     if (focusComment && textareaRef.current) {
       setTimeout(() => {
         textareaRef.current?.focus();
-        textareaRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+        textareaRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
       }, 100);
     }
-  }, [focusComment]);
+  }, [focusComment, tweet_id]);
+
+  // Fetch comments function
+  const fetchComments = async () => {
+    try {
+      const data = await commentApi.getComments(tweet_id);
+
+      const mappedComments = data.map((comment: any) => ({
+        comment_id: comment.id || comment.comment_id,
+        user_name: comment.user_name,
+        display_name: comment.display_name,
+        profile_image: comment.profile_image,
+        created_at: comment.created_at,
+        content: comment.content,
+        replies: (comment.replies || []).map((reply: any) => ({
+          comment_id: reply.id || reply.comment_id,
+          user_name: reply.user_name,
+          display_name: reply.display_name,
+          profile_image: reply.profile_image,
+          created_at: reply.created_at,
+          content: reply.content,
+          parent_comment_id: reply.parent_comment_id || null,
+        })),
+      }));
+      setComments(mappedComments);
+    } catch (error) {
+      console.error("Failed to fetch comments:", error);
+    }
+  };
 
   const handleClose = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -108,11 +151,15 @@ export function TweetThreadDetail({
   const handleReply = async () => {
     if (!newComment.trim()) return;
     setIsSubmitting(true);
-    // TODO: Add comment to backend
-    setTimeout(() => {
+    try {
+      await commentApi.createComment(tweet_id, newComment);
+      await fetchComments();
       setNewComment("");
+    } catch (error) {
+      console.error("Failed to create comment:", error);
+    } finally {
       setIsSubmitting(false);
-    }, 500);
+    }
   };
 
   const handleLike = async () => {
@@ -156,7 +203,7 @@ export function TweetThreadDetail({
               <div className="flex gap-4">
                 <Avatar className="w-14 h-14 border-2 border-black flex-shrink-0">
                   {profile_image && (
-                    <AvatarImage src={profile_image} alt={display_name} />
+                    <AvatarImage src={getProperImageUrl(profile_image) || ""} alt={display_name} />
                   )}
                   <AvatarFallback className="font-black text-base bg-blue-100">
                     {initials}
@@ -197,11 +244,15 @@ export function TweetThreadDetail({
                   {/* Stats */}
                   <div className="flex gap-6 mt-5 pt-4 border-t-2 border-black text-sm font-bold">
                     <div className="flex flex-col">
-                      <span className="text-gray-500 text-xs uppercase">Reposts</span>
+                      <span className="text-gray-500 text-xs uppercase">
+                        Reposts
+                      </span>
                       <span className="text-lg font-black">{retweets}</span>
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-gray-500 text-xs uppercase">Likes</span>
+                      <span className="text-gray-500 text-xs uppercase">
+                        Likes
+                      </span>
                       <span className="text-lg font-black">{likes}</span>
                     </div>
                   </div>
@@ -212,7 +263,10 @@ export function TweetThreadDetail({
                       onClick={() => {
                         setTimeout(() => {
                           textareaRef.current?.focus();
-                          textareaRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+                          textareaRef.current?.scrollIntoView({
+                            behavior: "smooth",
+                            block: "center",
+                          });
                         }, 100);
                       }}
                       className="flex-1 flex items-center justify-center gap-2 py-3 border-2 border-blue-500 bg-blue-50 rounded-lg hover:bg-blue-100 transition-all duration-200 font-bold uppercase text-sm hover:scale-105 active:scale-95 text-blue-600 shadow-md"
@@ -239,10 +293,7 @@ export function TweetThreadDetail({
                           : "border-black hover:bg-red-50"
                       }`}
                     >
-                      <Heart
-                        size={18}
-                        fill={liked ? "currentColor" : "none"}
-                      />
+                      <Heart size={18} fill={liked ? "currentColor" : "none"} />
                       Like
                     </button>
                   </div>
@@ -254,11 +305,13 @@ export function TweetThreadDetail({
             <div className="border-t-2 border-gray-200" />
 
             {/* Add Comment Section */}
-            <div className={`border-2 rounded-xl p-5 transition-all duration-300 ${
-              focusComment
-                ? "border-blue-500 bg-blue-50 shadow-lg"
-                : "border-black bg-gray-50 hover:bg-white"
-            }`}>
+            <div
+              className={`border-2 rounded-xl p-5 transition-all duration-300 ${
+                focusComment
+                  ? "border-blue-500 bg-blue-50 shadow-lg"
+                  : "border-black bg-gray-50 hover:bg-white"
+              }`}
+            >
               <div className="flex gap-3">
                 <Avatar className="w-11 h-11 border-2 border-black flex-shrink-0">
                   <AvatarFallback className="font-black bg-purple-100">
@@ -314,9 +367,10 @@ export function TweetThreadDetail({
               ) : (
                 <div className="space-y-3">
                   {comments.map((comment) => (
-                    <CommentItem
-                      key={comment.comment_id}
+                    <CommentItem 
+                      key={comment.comment_id} 
                       comment={comment}
+                      onCommentRefresh={fetchComments}
                     />
                   ))}
                 </div>
@@ -330,78 +384,3 @@ export function TweetThreadDetail({
 }
 
 // ─── Comment Item Component ───
-
-interface CommentItemProps {
-  comment: Comment;
-}
-
-export function CommentItem({ comment }: CommentItemProps) {
-  const [liked, setLiked] = useState(comment.isLiked);
-  const [likes, setLikes] = useState(comment.like_count);
-  const initials = (comment.display_name || comment.user_name || "?")[
-    0
-  ].toUpperCase();
-
-  const handleLike = () => {
-    const newLiked = !liked;
-    setLiked(newLiked);
-    setLikes(newLiked ? likes + 1 : likes - 1);
-    // TODO: Call API
-  };
-
-  return (
-    <div className="border-2 border-gray-300 rounded-xl p-4 hover:border-black transition-all duration-300 hover:shadow-md bg-white">
-      <div className="flex gap-3">
-        <Avatar className="w-10 h-10 border-2 border-gray-300 flex-shrink-0 hover:border-black transition-colors duration-300">
-          {comment.profile_image && (
-            <AvatarImage
-              src={comment.profile_image}
-              alt={comment.display_name}
-            />
-          )}
-          <AvatarFallback className="font-black text-xs bg-green-100">
-            {initials}
-          </AvatarFallback>
-        </Avatar>
-
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-bold uppercase text-sm">
-              {comment.display_name || comment.user_name}
-            </span>
-            <span className="text-gray-500 text-xs">@{comment.user_name}</span>
-            <span className="text-gray-400 text-xs">·</span>
-            <span className="text-gray-500 text-xs">
-              {timeAgo(comment.created_at)}
-            </span>
-          </div>
-
-          <p className="text-sm font-bold mt-2 break-words leading-relaxed">
-            {comment.content}
-          </p>
-
-          <div className="flex gap-4 mt-3 pt-2 border-t border-gray-200">
-            <button className="flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-blue-500 transition-all duration-200 hover:scale-110 active:scale-95">
-              <MessageCircle size={14} />
-              Reply
-            </button>
-            <button
-              onClick={handleLike}
-              className={`flex items-center gap-1 text-xs font-bold transition-all duration-200 hover:scale-110 active:scale-95 ${
-                liked
-                  ? "text-red-500"
-                  : "text-gray-500 hover:text-red-500"
-              }`}
-            >
-              <Heart
-                size={14}
-                fill={liked ? "currentColor" : "none"}
-              />
-              {likes > 0 && <span>{likes}</span>}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
