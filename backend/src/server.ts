@@ -11,6 +11,7 @@ import { verifyToken } from "./middleware/verifyAuth";
 import { getUserFeed } from "./controllers/userController";
 import cors from 'cors';
 import session from "express-session";
+import path from "path";
 
 const PORT = process.env.PORT;
 const app: Application = express();
@@ -33,6 +34,7 @@ app.use(
   }),
 );
 // ROUTES
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", authRoutes);

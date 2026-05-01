@@ -59,12 +59,11 @@ export function TweetList() {
   return (
     
     <div className="space-y-4 mt-4">
-      
-      <TweetCard user_name="John" content="Hello world!" created_at="2026-04-30" display_name="kevin" isLiked={false} isRetweeted={false} like_count={2} media={""} media_type={"image"} profile_image={""} retweet_count={4} type="tweet" />
        
        {
         tweets.map((tweet)=>(
           <TweetCard
+          tweet_id={tweet.tweet_id}
             key={tweet.tweet_id}
             user_name={tweet.user_name}
             display_name={tweet.display_name}
