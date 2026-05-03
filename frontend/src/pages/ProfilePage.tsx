@@ -6,6 +6,7 @@ import { ProfileHeader } from "@/components/ProfileHeader";
 import { ProfileTabs } from "@/components/ProfileTabs";
 import { UserTweets } from "@/components/UserTweets";
 import { EditProfileModal } from "@/components/EditProfileModal";
+import { RightPanel } from "@/components/RightPanel";
 import { Loader2, ArrowLeft } from "lucide-react";
 
 interface UserProfile {
@@ -205,9 +206,7 @@ export function ProfilePage() {
 
       {/* Right Sidebar - Coming Soon */}
       <div className="hidden lg:block lg:col-span-1 border-l-2 border-black p-6">
-        <div className="bg-gray-50 border-2 border-black rounded-xl p-4 text-center">
-          <p className="font-bold text-sm text-gray-600">Recommended Users Coming Soon</p>
-        </div>
+        <RightPanel />
       </div>
 
       {/* Edit Profile Modal */}

@@ -2,6 +2,7 @@ import { Router } from "express";
 import { verifyToken } from "../middleware/verifyAuth";
 import {
   deleteUser,
+  getAllUsers,
   getUser,
   getUserbyId,
   getUserbyUserName,
@@ -12,6 +13,7 @@ import {
 import { upload } from "../services/fileService";
 
 const router = Router();
+router.get("/", verifyToken, getAllUsers);
 router.get("/me", verifyToken, getUser);
 router.get("/:user_id", getUserbyId);
 router.get("/username/:user_name", getUserbyUserName);

@@ -26,6 +26,8 @@ interface TweetCardProps {
   isLiked: boolean;
   isRetweeted: boolean;
   type: TweetType;
+  retweeted_by_user_name?: string | null;
+  retweeted_by_display_name?: string | null;
   onLike?: () => void;
   onRetweet?: () => void;
   onComment?: () => void;
@@ -84,6 +86,8 @@ export function TweetCard({
   isLiked,
   isRetweeted,
   type,
+  retweeted_by_user_name,
+  retweeted_by_display_name,
   onLike,
   onRetweet,
   onComment,
@@ -142,7 +146,9 @@ export function TweetCard({
       {type === "repost" && (
         <div className="flex items-center gap-1 text-xs text-gray-500 mb-2 ml-10 font-bold">
           <Repeat2 size={13} />
-          <span>You reposted</span>
+          <span>
+            {(retweeted_by_display_name || retweeted_by_user_name || "You")} retweeted this post
+          </span>
         </div>
       )}
 

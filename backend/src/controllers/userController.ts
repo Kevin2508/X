@@ -14,6 +14,18 @@ export const getUser = async (req: AuthenticatedRequest, res: Response) => {
     res.status(200).json({ error });
   }
 };
+export const getAllUsers = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const currentUserId = req.user?.user_id;
+    const [result] = await db.query<User[]>(
+      `select * from users where user_id != ? order by created_at desc`,
+      [currentUserId ?? 0],
+    );
+    return res.status(200).json({ result });
+  } catch (error) {
+    return res.status(500).json({ error });
+  }
+};
 export const getUserbyId = async (req: Request, res: Response) => {
      try {
     const user_id = req.params.user_id;
@@ -148,7 +160,9 @@ export const getUserFeed = async (req: AuthenticatedRequest, res: Response) => {
           WHERE r.tweet_id = t.tweet_id AND r.user_id = ?
         ) AS isLiked,
 
-        'tweet' AS type
+        'tweet' AS type,
+        NULL AS retweeted_by_user_name,
+        NULL AS retweeted_by_display_name
 
       FROM tweets t
       JOIN users u ON t.user_id = u.user_id
@@ -191,11 +205,14 @@ export const getUserFeed = async (req: AuthenticatedRequest, res: Response) => {
           WHERE r2.tweet_id = t.tweet_id AND r2.user_id = ?
         ) AS isLiked,
 
-        'retweet' AS type
+        'retweet' AS type,
+        ru.user_name AS retweeted_by_user_name,
+        ru.display_name AS retweeted_by_display_name
 
       FROM retweet r
       JOIN tweets t ON r.tweet_id = t.tweet_id
       JOIN users u ON t.user_id = u.user_id
+      JOIN users ru ON r.user_id = ru.user_id
       LEFT JOIN tweet_media m ON t.tweet_id = m.tweet_id
       WHERE r.user_id IN (
         SELECT followee_id FROM follows WHERE follower_id = ?

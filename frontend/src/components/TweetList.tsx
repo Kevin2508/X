@@ -16,6 +16,8 @@ interface Tweet {
   isLiked: boolean;
   isRetweeted: boolean;
   type: "tweet" | "retweet";
+  retweeted_by_user_name?: string | null;
+  retweeted_by_display_name?: string | null;
 }
 
 export function TweetList() {
@@ -24,13 +26,21 @@ export function TweetList() {
 
        
     useEffect(()=>{
+      let isMounted = true;
+
       const fetchTweets = async()=>{
         const data = await getTweets();
-        setTweets(data ?? [])
-        
-      }
+        if (isMounted) {
+          setTweets(data ?? []);
+        }
+      };
+
       fetchTweets();
-    },[getTweets]);
+
+      return () => {
+        isMounted = false;
+      };
+    },[]);
         
     if (loading) {
     return (
@@ -76,6 +86,8 @@ export function TweetList() {
             isLiked={tweet.isLiked}
             isRetweeted = {tweet.isRetweeted}
             type={tweet.type === "retweet" ? "repost" : "tweet"}
+            retweeted_by_user_name={tweet.retweeted_by_user_name}
+            retweeted_by_display_name={tweet.retweeted_by_display_name}
           ></TweetCard>
         ))
        }

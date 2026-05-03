@@ -63,7 +63,7 @@ export const getFollowing = async (req: Request, res: Response) => {
   try {
     const user_id = req.params.user_id;
     const [followers] = await db.query<User[]>(
-      `select users.* from follows join users on follows.follower_id = users.user_id where follows.follower_id = ?`,
+      `select users.* from follows join users on follows.followee_id = users.user_id where follows.follower_id = ?`,
       [user_id],
     );
     return res.status(200).json(followers);
@@ -84,7 +84,7 @@ export const checkFollowing = async (
       [followee_id, user_id],
     );
 
-    return res.status(200).json({ message: `${result.length}` });
+    return res.status(200).json({ isFollowing: result.length > 0 });
   } catch (error) {
     return res.status(400).json({ message: error });
   }

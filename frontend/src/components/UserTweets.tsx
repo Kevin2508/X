@@ -16,6 +16,9 @@ interface Tweet {
   retweet_count: number;
   isLiked: boolean;
   isRetweeted: boolean;
+  type?: "tweet" | "retweet";
+  retweeted_by_user_name?: string | null;
+  retweeted_by_display_name?: string | null;
 }
 
 interface UserTweetsProps {
@@ -110,7 +113,9 @@ export function UserTweets({ userId, tab }: UserTweetsProps) {
             retweet_count={tweet.retweet_count}
             isLiked={tweet.isLiked}
             isRetweeted={tweet.isRetweeted}
-            type="tweet"
+            type={tweet.type === "retweet" ? "repost" : "tweet"}
+            retweeted_by_user_name={tweet.retweeted_by_user_name}
+            retweeted_by_display_name={tweet.retweeted_by_display_name}
           />
         </div>
       ))}

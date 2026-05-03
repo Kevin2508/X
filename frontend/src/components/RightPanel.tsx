@@ -1,16 +1,134 @@
+import { useEffect, useState } from "react";
+import { userApi } from "@/api/userApi";
+import { useAuth } from "@/context/AuthContext";
+import { UserCard } from "./UserCard";
 import { Card } from "./ui/card";
 import { Input } from "./ui/input";
 
+interface SuggestedUser {
+  user_id: number;
+  user_name: string;
+  display_name: string;
+  profile_image?: string | null;
+  bio?: string | null;
+}
+
 export function RightPanel() {
+  const { user } = useAuth();
+  const [users, setUsers] = useState<SuggestedUser[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<SuggestedUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    const fetchSuggestedUsers = async () => {
+      try {
+        setLoading(true);
+        const [allUsersResponse, followingResponse] = await Promise.all([
+          userApi.getAllUsers(),
+          user ? userApi.getFollowing(user.user_id) : Promise.resolve([]),
+        ]);
+
+        const allUsers = Array.isArray(allUsersResponse?.result)
+          ? allUsersResponse.result
+          : [];
+        const following = Array.isArray(followingResponse) ? followingResponse : [];
+        const followingIds = new Set(
+          following.map((followedUser: SuggestedUser) => followedUser.user_id),
+        );
+
+        const suggestedUsers = allUsers.filter(
+          (candidate: SuggestedUser) =>
+            candidate.user_id !== user?.user_id &&
+            !followingIds.has(candidate.user_id),
+        );
+
+        setUsers(suggestedUsers);
+        setFilteredUsers(suggestedUsers);
+      } catch (error) {
+        console.error("Failed to fetch suggested users:", error);
+        setUsers([]);
+        setFilteredUsers([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSuggestedUsers();
+  }, [user]);
+
+  useEffect(() => {
+    const normalizedQuery = search.trim().toLowerCase();
+
+    if (!normalizedQuery) {
+      setFilteredUsers(users);
+      return;
+    }
+
+    setFilteredUsers(
+      users.filter((candidate) => {
+        const displayName = candidate.display_name?.toLowerCase() ?? "";
+        const userName = candidate.user_name?.toLowerCase() ?? "";
+        const bio = candidate.bio?.toLowerCase() ?? "";
+
+        return (
+          displayName.includes(normalizedQuery) ||
+          userName.includes(normalizedQuery) ||
+          bio.includes(normalizedQuery)
+        );
+      }),
+    );
+  }, [search, users]);
+
+  const handleFollowedUser = (userId: number, isFollowing: boolean) => {
+    if (!isFollowing) {
+      return;
+    }
+
+    setUsers((currentUsers) =>
+      currentUsers.filter((candidate) => candidate.user_id !== userId),
+    );
+    setFilteredUsers((currentUsers) =>
+      currentUsers.filter((candidate) => candidate.user_id !== userId),
+    );
+  };
+
   return (
     <div className="p-4 space-y-4 border-l-2 border-black">
-      <Input placeholder="Search..." className="comic-input border-2 border-black font-black uppercase" />
+      <Input
+        placeholder="Search users..."
+        value={search}
+        onChange={(event) => setSearch(event.target.value)}
+        className="comic-input border-2 border-black font-black uppercase"
+      />
       <Card className="p-4 comic-card comic-shadow border-2 border-black">
-        <h2 className="font-black text-xl uppercase tracking-wider border-b-2 border-black pb-2 mb-3">TRENDS</h2>
-        <div className="space-y-2 font-black uppercase">
-          <p className="text-sm cursor-pointer hover:underline">#React</p>
-          <p className="text-sm cursor-pointer hover:underline">#Flutter</p>
-          <p className="text-sm cursor-pointer hover:underline">#AI</p>
+        <h2 className="font-black text-xl uppercase tracking-wider border-b-2 border-black pb-2 mb-3">
+          Who To Follow
+        </h2>
+        <div className="space-y-3">
+          {loading && (
+            <p className="text-sm font-bold text-gray-500">Loading users...</p>
+          )}
+          {!loading && filteredUsers.length === 0 && (
+            <p className="text-sm font-bold text-gray-500">
+              No unfollowed users found.
+            </p>
+          )}
+          {!loading &&
+            filteredUsers.map((candidate) => (
+              <UserCard
+                key={candidate.user_id}
+                user_id={candidate.user_id}
+                user_name={candidate.user_name}
+                display_name={candidate.display_name}
+                profile_image={candidate.profile_image}
+                bio={candidate.bio ?? undefined}
+                isFollowing={false}
+                onFollowChange={(isFollowing) =>
+                  handleFollowedUser(candidate.user_id, isFollowing)
+                }
+              />
+            ))}
         </div>
       </Card>
     </div>
