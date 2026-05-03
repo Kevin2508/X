@@ -2,6 +2,10 @@ import { useEffect, useState } from "react";
 import { TweetCard } from "./TweetCard";
 import { useTweets } from "@/hooks/useTweets";
 type MediaType = "image" | "video" | null;
+interface TweetMediaItem {
+  media: string;
+  media_type: MediaType;
+}
 interface Tweet {
   tweet_id: number;
   user_name: string;
@@ -11,6 +15,7 @@ interface Tweet {
   profile_image?: string;
   media?: string;
   media_type?: MediaType;
+  media_items?: TweetMediaItem[];
   like_count: number;
   retweet_count: number;
   isLiked: boolean;
@@ -23,6 +28,12 @@ interface Tweet {
 export function TweetList() {
   const {getTweets, loading, error} = useTweets();
   const [tweets,setTweets] = useState<Tweet[]>([]);
+
+  const handleTweetDeleted = (tweetId: number) => {
+    setTweets((currentTweets) =>
+      currentTweets.filter((tweet) => tweet.tweet_id !== tweetId),
+    );
+  };
 
        
     useEffect(()=>{
@@ -81,6 +92,7 @@ export function TweetList() {
             profile_image={tweet.profile_image || ""}
             media={tweet.media || ""}
             media_type={tweet.media_type ?? null}
+            media_items={tweet.media_items}
             like_count={tweet.like_count}
             retweet_count={tweet.retweet_count}
             isLiked={tweet.isLiked}
@@ -88,6 +100,7 @@ export function TweetList() {
             type={tweet.type === "retweet" ? "repost" : "tweet"}
             retweeted_by_user_name={tweet.retweeted_by_user_name}
             retweeted_by_display_name={tweet.retweeted_by_display_name}
+            onDelete={handleTweetDeleted}
           ></TweetCard>
         ))
        }

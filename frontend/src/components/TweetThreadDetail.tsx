@@ -4,8 +4,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { commentApi } from "@/api/commentApi";
 import { CommentItem } from "./CommentItem";
 import { getProperImageUrl } from "@/utils/imageUtils";
+import { timeAgo } from "@/utils/timeAgo";
 
 type MediaType = "image" | "video" | null;
+
+interface TweetMediaItem {
+  media: string;
+  media_type: MediaType;
+}
 
 interface Reply {
   comment_id: number;
@@ -35,23 +41,13 @@ interface TweetThreadDetailProps {
   profile_image: string | null;
   media: string | null;
   media_type: MediaType;
+  media_items?: TweetMediaItem[];
   like_count: number;
   retweet_count: number;
   isLiked: boolean;
   isRetweeted: boolean;
   focusComment?: boolean;
   onClose: () => void;
-}
-
-function timeAgo(dateStr: string): string {
-  const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-  if (diff < 60) return `${diff}s`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}m`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
 }
 
 function getMediaUrl(mediaPath: string | null | undefined): string | null {
@@ -81,6 +77,7 @@ export function TweetThreadDetail({
   profile_image,
   media,
   media_type,
+  media_items = [],
   like_count,
   retweet_count,
   isLiked,
@@ -96,7 +93,12 @@ export function TweetThreadDetail({
   const [retweets, setRetweets] = useState(retweet_count);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const mediaUrl = getMediaUrl(media);
+  const mediaItems =
+    media_items.length > 0
+      ? media_items
+      : media
+        ? [{ media, media_type }]
+        : [];
 
   const initials = (display_name || user_name || "?")[0].toUpperCase();
 
@@ -179,17 +181,16 @@ export function TweetThreadDetail({
   return (
     <div
       onClick={handleClose}
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/40 p-4 backdrop-blur-sm animate-in fade-in"
     >
-      <div className="w-full max-w-2xl max-h-[90vh] bg-white rounded-2xl border-2 border-black shadow-2xl overflow-hidden flex flex-col animate-in scale-in-95">
-        {/* Header */}
-        <div className="sticky top-0 bg-white border-b-2 border-black px-6 py-4 flex justify-between items-center">
-          <h2 className="font-black text-lg uppercase tracking-wider">
+      <div className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-2xl animate-in scale-in-95">
+        <div className="sticky top-0 flex items-center justify-between border-b border-neutral-200 bg-white px-6 py-4">
+          <h2 className="text-lg font-semibold tracking-tight text-neutral-950">
             Tweet Thread
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95"
+            className="rounded-full p-2 transition-colors hover:bg-neutral-100"
           >
             <X size={24} className="font-bold" />
           </button>
@@ -199,13 +200,13 @@ export function TweetThreadDetail({
         <div className="overflow-y-auto flex-1 scrollbar-hide">
           <div className="p-6 space-y-6">
             {/* Main Tweet */}
-            <div className="border-2 border-black rounded-xl p-6 bg-white hover:shadow-lg transition-shadow duration-300">
+            <div className="rounded-2xl border border-neutral-200 bg-white p-5">
               <div className="flex gap-4">
-                <Avatar className="w-14 h-14 border-2 border-black flex-shrink-0">
+                <Avatar className="h-14 w-14 flex-shrink-0">
                   {profile_image && (
                     <AvatarImage src={getProperImageUrl(profile_image) || ""} alt={display_name} />
                   )}
-                  <AvatarFallback className="font-black text-base bg-blue-100">
+                  <AvatarFallback className="text-base">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
@@ -213,52 +214,78 @@ export function TweetThreadDetail({
                 <div className="flex-1 min-w-0">
                   {/* User Info */}
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-black uppercase text-base">
+                    <span className="text-base font-semibold text-neutral-950">
                       {display_name || user_name}
                     </span>
-                    <span className="text-gray-500 text-sm">@{user_name}</span>
-                    <span className="text-gray-400 text-lg">·</span>
-                    <span className="text-gray-500 text-sm">
+                    <span className="text-sm text-neutral-500">@{user_name}</span>
+                    <span className="text-lg text-neutral-300">·</span>
+                    <span className="text-sm text-neutral-500">
                       {timeAgo(created_at)}
                     </span>
                   </div>
 
                   {/* Content */}
-                  <p className="text-base font-bold mt-3 break-words leading-relaxed">
+                  <p className="mt-3 break-words text-base leading-7 text-neutral-800">
                     {content}
                   </p>
 
                   {/* Media */}
-                  {media && media_type === "image" && mediaUrl && (
-                    <img
-                      src={mediaUrl}
-                      alt="tweet"
-                      className="mt-4 rounded-xl border-2 border-black w-full max-h-96 object-cover hover:brightness-95 transition-all duration-300"
-                      onError={(e) => {
-                        console.error("Failed to load image:", mediaUrl);
-                        (e.target as HTMLImageElement).style.display = "none";
-                      }}
-                    />
+                  {mediaItems.length > 0 && (
+                    <div className="mt-4 grid grid-cols-2 gap-2">
+                      {mediaItems.map((item, index) => {
+                        const itemUrl = getMediaUrl(item.media);
+                        const isVideo = item.media_type === "video";
+
+                        if (!itemUrl) return null;
+
+                        return (
+                          <div
+                            key={`${item.media}-${index}`}
+                            className={`overflow-hidden rounded-2xl border border-neutral-200 ${
+                              mediaItems.length === 1 ? "col-span-2" : ""
+                            }`}
+                          >
+                            {isVideo ? (
+                              <video
+                                src={itemUrl}
+                                className="max-h-96 w-full object-cover"
+                                controls
+                              />
+                            ) : (
+                              <img
+                                src={itemUrl}
+                                alt="tweet"
+                                className="max-h-96 w-full object-cover hover:brightness-95 transition-all duration-300"
+                                onError={(e) => {
+                                  console.error("Failed to load image:", itemUrl);
+                                  (e.target as HTMLImageElement).style.display = "none";
+                                }}
+                              />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   )}
 
                   {/* Stats */}
-                  <div className="flex gap-6 mt-5 pt-4 border-t-2 border-black text-sm font-bold">
+                  <div className="mt-5 flex gap-6 border-t border-neutral-100 pt-4 text-sm">
                     <div className="flex flex-col">
-                      <span className="text-gray-500 text-xs uppercase">
+                      <span className="text-xs text-neutral-500">
                         Reposts
                       </span>
-                      <span className="text-lg font-black">{retweets}</span>
+                      <span className="text-lg font-semibold">{retweets}</span>
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-gray-500 text-xs uppercase">
+                      <span className="text-xs text-neutral-500">
                         Likes
                       </span>
-                      <span className="text-lg font-black">{likes}</span>
+                      <span className="text-lg font-semibold">{likes}</span>
                     </div>
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex gap-3 mt-5 pt-4 border-t-2 border-black">
+                  <div className="mt-5 flex gap-3 border-t border-neutral-100 pt-4">
                     <button
                       onClick={() => {
                         setTimeout(() => {
@@ -269,17 +296,17 @@ export function TweetThreadDetail({
                           });
                         }, 100);
                       }}
-                      className="flex-1 flex items-center justify-center gap-2 py-3 border-2 border-blue-500 bg-blue-50 rounded-lg hover:bg-blue-100 transition-all duration-200 font-bold uppercase text-sm hover:scale-105 active:scale-95 text-blue-600 shadow-md"
+                      className="flex flex-1 items-center justify-center gap-2 rounded-full border border-blue-100 bg-blue-50 py-3 text-sm font-semibold text-blue-600 transition-colors hover:bg-blue-100"
                     >
                       <MessageCircle size={18} />
                       Reply
                     </button>
                     <button
                       onClick={handleRetweet}
-                      className={`flex-1 flex items-center justify-center gap-2 py-3 border-2 rounded-lg font-bold uppercase text-sm transition-all duration-200 hover:scale-105 active:scale-95 ${
+                      className={`flex flex-1 items-center justify-center gap-2 rounded-full border py-3 text-sm font-semibold transition-colors ${
                         retweeted
-                          ? "border-green-500 bg-green-50 text-green-600"
-                          : "border-black hover:bg-green-50"
+                          ? "border-green-100 bg-green-50 text-green-600"
+                          : "border-neutral-200 hover:bg-green-50"
                       }`}
                     >
                       <Repeat2 size={18} />
@@ -287,10 +314,10 @@ export function TweetThreadDetail({
                     </button>
                     <button
                       onClick={handleLike}
-                      className={`flex-1 flex items-center justify-center gap-2 py-3 border-2 rounded-lg font-bold uppercase text-sm transition-all duration-200 hover:scale-105 active:scale-95 ${
+                      className={`flex flex-1 items-center justify-center gap-2 rounded-full border py-3 text-sm font-semibold transition-colors ${
                         liked
-                          ? "border-red-500 bg-red-50 text-red-600"
-                          : "border-black hover:bg-red-50"
+                          ? "border-red-100 bg-red-50 text-red-600"
+                          : "border-neutral-200 hover:bg-red-50"
                       }`}
                     >
                       <Heart size={18} fill={liked ? "currentColor" : "none"} />
@@ -306,15 +333,15 @@ export function TweetThreadDetail({
 
             {/* Add Comment Section */}
             <div
-              className={`border-2 rounded-xl p-5 transition-all duration-300 ${
+              className={`rounded-2xl border p-5 transition-colors ${
                 focusComment
-                  ? "border-blue-500 bg-blue-50 shadow-lg"
-                  : "border-black bg-gray-50 hover:bg-white"
+                  ? "border-blue-200 bg-blue-50"
+                  : "border-neutral-200 bg-neutral-50 hover:bg-white"
               }`}
             >
               <div className="flex gap-3">
-                <Avatar className="w-11 h-11 border-2 border-black flex-shrink-0">
-                  <AvatarFallback className="font-black bg-purple-100">
+                <Avatar className="h-11 w-11 flex-shrink-0">
+                  <AvatarFallback>
                     YOU
                   </AvatarFallback>
                 </Avatar>
@@ -325,17 +352,17 @@ export function TweetThreadDetail({
                     onChange={(e) => setNewComment(e.target.value)}
                     placeholder="What's your reply? Add context..."
                     maxLength={280}
-                    className="w-full border-2 border-black rounded-lg p-3 font-bold resize-none focus:outline-none focus:ring-2 focus:ring-blue-400 placeholder-gray-400 transition-all duration-200 bg-white"
+                    className="w-full resize-none rounded-2xl border border-neutral-200 bg-white p-3 text-sm focus:outline-none focus:ring-4 focus:ring-neutral-950/5"
                     rows={3}
                   />
                   <div className="flex items-center justify-between mt-3">
-                    <span className="text-xs text-gray-500 font-bold">
+                    <span className="text-xs text-neutral-500">
                       {newComment.length}/280
                     </span>
                     <button
                       onClick={handleReply}
                       disabled={!newComment.trim() || isSubmitting}
-                      className="px-5 py-2 bg-black text-white font-black rounded-lg hover:bg-gray-800 transition-all duration-200 uppercase text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95 flex items-center gap-2 shadow-md hover:shadow-lg"
+                      className="flex items-center gap-2 rounded-full bg-neutral-950 px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {isSubmitting && (
                         <Loader2 size={16} className="animate-spin" />
@@ -349,7 +376,7 @@ export function TweetThreadDetail({
 
             {/* Comments Section */}
             <div>
-              <h3 className="font-black uppercase text-lg tracking-wider mb-4 flex items-center gap-2">
+              <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-neutral-950">
                 <MessageCircle size={20} />
                 {comments.length} Replies
               </h3>

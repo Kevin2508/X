@@ -5,6 +5,7 @@ import { Card } from "./ui/card";
 import { Textarea } from "./ui/textarea";
 import { useAuth } from "@/context/AuthContext";
 import { useTweets } from "@/hooks/useTweets";
+import { ImagePlus, X } from "lucide-react";
 interface TweetFormProps{
   onTweetCreated?:(tweet:any)=>void;
 }
@@ -13,36 +14,61 @@ export function TweetForm({ onTweetCreated }: TweetFormProps) {
   const { createTweet, loading, error } = useTweets();
 
   const [content, setContent] = useState("");
-  const [image, setImage] = useState<File | null>(null);
-  const [preview, setPreview] = useState("");
+  const [files, setFiles] = useState<File[]>([]);
+  const [mediaError, setMediaError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const removeImage = () => {
-    setImage(null);
-    setPreview("");
+  const resetMedia = () => {
+    setFiles([]);
+    setMediaError("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
+  const removeFile = (index: number) => {
+    setFiles((currentFiles) => currentFiles.filter((_, fileIndex) => fileIndex !== index));
+  };
+
+  const handleMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(e.target.files ?? []);
+    if (selectedFiles.length === 0) return;
+
+    const nextFiles = [...files, ...selectedFiles].slice(0, 5);
+    const videoCount = nextFiles.filter((file) => file.type.startsWith("video")).length;
+    const oversizedFile = nextFiles.find((file) => file.size > 25 * 1024 * 1024);
+
+    if (selectedFiles.length + files.length > 5) {
+      setMediaError("You can attach up to 5 media files.");
+      e.target.value = "";
       return;
     }
-    setImage(file);
-    setPreview(URL.createObjectURL(file)); // show image preview instantly
+
+    if (videoCount > 1) {
+      setMediaError("Only one video can be added to a tweet.");
+      e.target.value = "";
+      return;
+    }
+
+    if (oversizedFile) {
+      setMediaError("Each media file must be 25MB or smaller.");
+      e.target.value = "";
+      return;
+    }
+
+    setMediaError("");
+    setFiles(nextFiles);
+    e.target.value = "";
   };
 
   const handleSubmit = async () => {
-    if (!content.trim()) return;
+    if (!content.trim() && files.length === 0) return;
     try {
-      const newTweet = await createTweet({ content, image: image ?? undefined });
+      const newTweet = await createTweet({ content, files });
 
       if (newTweet) {
         setContent("");
-        removeImage();
+        resetMedia();
                       
         // Call callback if provided
         if (onTweetCreated) {
@@ -54,61 +80,82 @@ export function TweetForm({ onTweetCreated }: TweetFormProps) {
     }
   };
   return (
-    <Card className="p-4 comic-card comic-shadow border-2 border-black">
+    <Card className="border-neutral-200 p-4 shadow-sm">
       <div className="flex gap-3">
         <Avatar>
-          <AvatarFallback className="font-black uppercase text-lg">
+          <AvatarFallback>
             {(user?.display_name || user?.user_name || "U")[0].toUpperCase()}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 space-y-3">
           <Textarea
             placeholder="What's happening?"
-            className="comic-input resize-none border-2 border-black"
+            className="min-h-28 resize-none border-0 bg-neutral-50 text-base focus-visible:ring-0"
             value={content}
             onChange={(e) => setContent(e.target.value)}
           />
-          {/* Image Preview */}
-        {preview && (
-          <div className="relative w-fit">
-            <img
-              src={preview}
-              alt="preview"
-              className="max-h-60 rounded-xl object-cover"
-            />
-            <button
-              onClick={removeImage}
-              className="absolute top-1 right-1 bg-black/60 text-white rounded-full w-6 h-6 text-xs"
-            >
-              ✕
-            </button>
-          </div>
-        )}
-        {/* Error Message */}
-        {error && <p className="text-red-500 text-sm">{error}</p>}
+          {files.length > 0 && (
+            <div className="grid grid-cols-2 gap-2">
+              {files.map((file, index) => {
+                const previewUrl = URL.createObjectURL(file);
+                const isVideo = file.type.startsWith("video");
 
-        {/* Bottom Bar */}
-        <div className="flex items-center justify-between border-t pt-3">
-          {/* Image Upload Button */}
+                return (
+                  <div key={`${file.name}-${index}`} className="relative overflow-hidden rounded-2xl border border-neutral-200">
+                    {isVideo ? (
+                      <video
+                        src={previewUrl}
+                        className="h-40 w-full object-cover"
+                        controls
+                      />
+                    ) : (
+                      <img
+                        src={previewUrl}
+                        alt={file.name}
+                        className="h-40 w-full object-cover"
+                      />
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => removeFile(index)}
+                      className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-neutral-900 shadow-sm"
+                      aria-label="Remove media"
+                    >
+                      <X size={15} />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+        {(error || mediaError) && (
+          <p className="text-sm font-medium text-red-600">{error || mediaError}</p>
+        )}
+
+        <div className="flex items-center justify-between border-t border-neutral-100 pt-3">
           <button
+            type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="text-blue-500 hover:text-blue-400 text-sm"
+            className="flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-950"
           >
-            📷 Photo
+            <ImagePlus size={18} />
+            Media
           </button>
           <input
             type="file"
-            accept="image/*"
+            accept="image/*,video/*"
+            multiple
             ref={fileInputRef}
-            onChange={handleImageChange}
+            onChange={handleMediaChange}
             className="hidden"
           />
 
           <div className="flex justify-end">
             <Button
-              className="comic-btn"
+              className="px-5"
               onClick={handleSubmit}
-              disabled={loading || !content.trim()}
+              disabled={loading || (!content.trim() && files.length === 0)}
             >
               {loading ? "Posting..." : "Post"}
             </Button>

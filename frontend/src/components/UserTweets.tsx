@@ -12,6 +12,10 @@ interface Tweet {
   profile_image: string | null;
   media: string | null;
   media_type: "image" | "video" | null;
+  media_items?: {
+    media: string;
+    media_type: "image" | "video" | null;
+  }[];
   like_count: number;
   retweet_count: number;
   isLiked: boolean;
@@ -30,6 +34,12 @@ export function UserTweets({ userId, tab }: UserTweetsProps) {
   const [tweets, setTweets] = useState<Tweet[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const handleTweetDeleted = (tweetId: number) => {
+    setTweets((currentTweets) =>
+      currentTweets.filter((tweet) => tweet.tweet_id !== tweetId),
+    );
+  };
 
   useEffect(() => {
     const fetchTweets = async () => {
@@ -74,18 +84,18 @@ export function UserTweets({ userId, tab }: UserTweetsProps) {
 
   if (error) {
     return (
-      <div className="text-center py-12 border-b-2 border-black">
-        <p className="text-red-500 font-bold">{error}</p>
+      <div className="border-b border-neutral-200 py-12 text-center">
+        <p className="font-medium text-red-600">{error}</p>
       </div>
     );
   }
 
   if (tweets.length === 0) {
     return (
-      <div className="border-b-2 border-black">
+      <div className="border-b border-neutral-200">
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <MessageSquare size={48} className="text-gray-300 mb-4" />
-          <p className="text-gray-500 font-bold text-lg">
+          <p className="text-lg font-medium text-neutral-500">
             {tab === "posts" && "No posts yet"}
             {tab === "media" && "No media posts yet"}
             {tab === "likes" && "No liked posts yet"}
@@ -97,9 +107,9 @@ export function UserTweets({ userId, tab }: UserTweetsProps) {
   }
 
   return (
-    <div className="space-y-0 border-b-2 border-black">
+    <div className="space-y-0 border-b border-neutral-200">
       {tweets.map((tweet) => (
-        <div key={tweet.tweet_id} className="border-b-2 border-black">
+        <div key={tweet.tweet_id} className="border-b border-neutral-200">
           <TweetCard
             tweet_id={tweet.tweet_id}
             content={tweet.content}
@@ -109,6 +119,7 @@ export function UserTweets({ userId, tab }: UserTweetsProps) {
             profile_image={tweet.profile_image}
             media={tweet.media}
             media_type={tweet.media_type}
+            media_items={tweet.media_items}
             like_count={tweet.like_count}
             retweet_count={tweet.retweet_count}
             isLiked={tweet.isLiked}
@@ -116,6 +127,7 @@ export function UserTweets({ userId, tab }: UserTweetsProps) {
             type={tweet.type === "retweet" ? "repost" : "tweet"}
             retweeted_by_user_name={tweet.retweeted_by_user_name}
             retweeted_by_display_name={tweet.retweeted_by_display_name}
+            onDelete={handleTweetDeleted}
           />
         </div>
       ))}

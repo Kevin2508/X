@@ -3,51 +3,128 @@ import { AuthenticatedRequest, Tweets, User } from "../types";
 import db from "../config/database";
 import { ResultSetHeader } from "mysql2";
 
+const withMediaItems = (rows: any[]) => {
+  const groupedTweets = new Map<string, any>();
+
+  rows.forEach((row) => {
+    const groupKey = [
+      row.tweet_id,
+      row.type ?? "tweet",
+      row.retweeted_by_user_name ?? "",
+    ].join("-");
+
+    if (!groupedTweets.has(groupKey)) {
+      groupedTweets.set(groupKey, {
+        ...row,
+        media_items: [],
+        media: row.media ?? null,
+        media_type: row.media_type ?? null,
+      });
+    }
+
+    if (row.media) {
+      groupedTweets.get(groupKey).media_items.push({
+        media: row.media,
+        media_type: row.media_type,
+      });
+    }
+  });
+
+  return Array.from(groupedTweets.values());
+};
+
 // CREATE TWEET
 export const createTweet = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const user_id = req.user?.user_id;
-    const content = req.body.content;
-    let files = req.file;
-    if (!content) {
-      return res.status(400).json({ message: "Content required" });
+    const content = req.body.content?.trim() ?? "";
+    const files = (req.files as Express.Multer.File[]) ?? [];
+    if (!content && files.length === 0) {
+      return res.status(400).json({ message: "Content or media required" });
     }
+
+    const videoCount = files.filter((file) => file.mimetype.startsWith("video")).length;
+    if (videoCount > 1) {
+      return res.status(400).json({ message: "Only one video can be uploaded per tweet" });
+    }
+
     const [result] = await db.query<ResultSetHeader>(
       `insert into tweets(user_id,content) values(?,?)`,
       [user_id, content],
     );
     const tweet_id = result.insertId;
-    let path = "";
-    if (files) {
-      path = files.path;
-      res.json({
-        message: "File uploaded successfully",
-        file: {
-          filename: files.filename,
-          originalName: files.originalname,
-          size: files.size,
-          mimetype: files.mimetype,
-          path: path,
-        },
-      });
-    } else {
-      path = "";
-      res.json({
-        message: "tweet uploaded successfully",
-      });
+
+    if (files.length > 0) {
+      await Promise.all(
+        files.map((file) => {
+          const media_type = file.mimetype.startsWith("image") ? "image" : "video";
+
+          return db.query<ResultSetHeader>(
+            `insert into tweet_media(tweet_id,media_type,media) values(?,?,?) `,
+            [tweet_id, media_type, file.path],
+          );
+        }),
+      );
     }
-    let media_type = "";
-    if (files?.mimetype.startsWith("image")) {
-      media_type = "image";
-    } else {
-      media_type = "video";
-    }
-    const [insertMedia] = await db.query<ResultSetHeader>(
-      `insert into tweet_media(tweet_id,media_type,media) values(?,?,?) `,
-      [tweet_id, media_type, path],
-    );
+
+    return res.status(201).json({
+      message: "tweet uploaded successfully",
+      tweet_id,
+    });
   } catch (error) {
     console.log(error);
+    return res.status(500).json({ message: "Failed to create tweet" });
+  }
+};
+
+// DELETE OWN TWEET
+export const deleteTweet = async (req: AuthenticatedRequest, res: Response) => {
+  const connection = await db.getConnection();
+
+  try {
+    const user_id = req.user?.user_id;
+    const tweet_id = req.params.id;
+
+    if (!user_id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const [tweets] = await connection.query<Tweets[]>(
+      `select user_id from tweets where tweet_id = ? limit 1`,
+      [tweet_id],
+    );
+
+    if (tweets.length === 0) {
+      return res.status(404).json({ message: "Tweet not found" });
+    }
+
+    if (Number(tweets[0].user_id) !== Number(user_id)) {
+      return res.status(403).json({ message: "You can delete only your own tweets" });
+    }
+
+    await connection.beginTransaction();
+
+    await connection.query(
+      `delete cr from comment_reactions cr
+       join comments c on cr.comment_id = c.comment_id
+       where c.tweet_id = ?`,
+      [tweet_id],
+    );
+    await connection.query(`delete from comments where tweet_id = ?`, [tweet_id]);
+    await connection.query(`delete from reactions where tweet_id = ?`, [tweet_id]);
+    await connection.query(`delete from retweet where tweet_id = ?`, [tweet_id]);
+    await connection.query(`delete from tweet_media where tweet_id = ?`, [tweet_id]);
+    await connection.query(`delete from tweets where tweet_id = ?`, [tweet_id]);
+
+    await connection.commit();
+
+    return res.status(200).json({ message: "Tweet deleted successfully" });
+  } catch (error) {
+    await connection.rollback();
+    console.log("error while deleting tweet:", error);
+    return res.status(500).json({ message: "Failed to delete tweet" });
+  } finally {
+    connection.release();
   }
 };
 
@@ -56,7 +133,7 @@ export const getAllTweets = async (req: Request, res: Response) => {
   try {
     const [result] = await db.query<Tweets[]>(`select * from tweets left join tweet_media on tweets.tweet_id = tweet_media.tweet_id`)
 
-    res.json(result);
+    res.json(withMediaItems(result));
   } catch (error) {
     console.log("error while getting all users:", error);
   }
@@ -108,7 +185,7 @@ export const getSpecificTweet = async (req: AuthenticatedRequest, res: Response)
           
           `, [user_id, user_id, id]);
 
-    res.json(result);
+    res.json(withMediaItems(result));
   } catch (error) {
     console.log("error while getting specific tweet:", error);
   }
@@ -206,7 +283,7 @@ export const getUserTweets = async (req: Request, res: Response) => {
 
       ORDER BY created_at DESC`, [id, id, id, id, id, id]);
 
-    res.json(result);
+    res.json(withMediaItems(result));
   } catch (error) {
     console.log("error while getting user tweet:", error);
   }

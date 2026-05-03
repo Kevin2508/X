@@ -2,6 +2,37 @@ import { Request, Response } from "express";
 import { AuthenticatedRequest, Tweets, User } from "../types";
 import db from "../config/database";
 import { ResultSetHeader } from "mysql2";
+
+const withMediaItems = (rows: any[]) => {
+  const groupedTweets = new Map<string, any>();
+
+  rows.forEach((row) => {
+    const groupKey = [
+      row.tweet_id,
+      row.type ?? "tweet",
+      row.retweeted_by_user_name ?? "",
+    ].join("-");
+
+    if (!groupedTweets.has(groupKey)) {
+      groupedTweets.set(groupKey, {
+        ...row,
+        media_items: [],
+        media: row.media ?? null,
+        media_type: row.media_type ?? null,
+      });
+    }
+
+    if (row.media) {
+      groupedTweets.get(groupKey).media_items.push({
+        media: row.media,
+        media_type: row.media_type,
+      });
+    }
+  });
+
+  return Array.from(groupedTweets.values());
+};
+
 export const getUser = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const user_id = req.user?.user_id;
@@ -223,7 +254,7 @@ export const getUserFeed = async (req: AuthenticatedRequest, res: Response) => {
       [user_id, user_id, user_id, user_id, user_id, user_id],
     );
 
-    res.json(result);
+    res.json(withMediaItems(result));
   } catch (error) {
     return res.status(400).json({ message: error });
   }

@@ -11,6 +11,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import API from "@/api/axios";
 import { useAuth } from "@/context/AuthContext";
+import { isAxiosError } from "axios";
 
 interface SignInResponse {
   user: {
@@ -30,6 +31,7 @@ export default function LoginPage() {
   const { login } = useAuth();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,11 +52,13 @@ export default function LoginPage() {
       if (res) {
         setIdentifier("");
         setPassword("");
-        login(user, token);
+        login(user, token, rememberMe);
         navigate("/home");
       }
     } catch (err: unknown) {
-      const errorMsg = err instanceof Error ? err.message : "Login failed";
+      const errorMsg = isAxiosError(err)
+        ? err.response?.data?.message ?? err.message
+        : "Login failed";
       setError(errorMsg);
       console.error("Login error:", err);
     }
@@ -62,33 +66,34 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white px-4">
-      <div className="grid md:grid-cols-2 gap-8 max-w-5xl w-full items-center">
-        {/* Left Section */}
-        <div className="hidden md:flex flex-col justify-center">
-          <h1 className="text-6xl font-black text-black mb-4 uppercase tracking-wider border-b-4 border-black pb-4">Twitter</h1>
-          <p className="text-black text-lg font-bold mt-4">
-            💬 Connect with friends and<br/>the world around you.
+    <div className="flex min-h-screen items-center justify-center bg-neutral-50 px-4 py-10">
+      <div className="grid w-full max-w-5xl items-center gap-10 md:grid-cols-2">
+        <div className="hidden flex-col justify-center md:flex">
+          <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-neutral-950 text-xl font-semibold text-white">
+            X
+          </div>
+          <h1 className="mb-4 text-5xl font-semibold tracking-tight text-neutral-950">Welcome back</h1>
+          <p className="max-w-sm text-lg leading-8 text-neutral-500">
+            Sign in to follow conversations, share updates, and stay close to your network.
           </p>
         </div>
 
-        {/* Right Section */}
-        <form>
-          <Card className="w-full comic-shadow border-2 border-black">
+        <form onSubmit={handleSubmit}>
+          <Card className="w-full border-neutral-200 p-2 shadow-sm">
             <CardHeader>
-              <CardTitle className="text-2xl uppercase font-black tracking-wider">🔐 SIGN IN</CardTitle>
+              <CardTitle className="text-2xl font-semibold tracking-tight">Sign in</CardTitle>
             </CardHeader>
 
             <CardContent className="space-y-4">
               {error && (
-                <div className="bg-red-50 border-2 border-red-500 text-red-600 p-3 rounded font-bold">
+                <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-600">
                   {error}
                 </div>
               )}
               <div className="space-y-2">
-                <Label className="font-black uppercase">📧 Enter username or email</Label>
+                <Label>Username or email</Label>
                 <Input
-                  type="email"
+                  type="text"
                   placeholder="Enter your username or email"
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
@@ -96,7 +101,7 @@ export default function LoginPage() {
               </div>
 
               <div className="space-y-2">
-                <Label className="font-black uppercase">🔒 Password</Label>
+                <Label>Password</Label>
                 <Input
                   type="password"
                   placeholder="Enter your password"
@@ -105,19 +110,32 @@ export default function LoginPage() {
                 />
               </div>
 
-              {/* Forgot Password */}
-              <div className="text-right text-sm text-black font-black cursor-pointer hover:underline">
-                ❓ Forgot Password?
+              <div className="flex items-center justify-between gap-3 text-sm">
+                <label className="flex cursor-pointer items-center gap-2 font-medium text-neutral-700">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="h-4 w-4 accent-black"
+                  />
+                  Remember me
+                </label>
+                <Link
+                  to="/forgot-password"
+                  className="font-medium text-neutral-950 hover:underline"
+                >
+                  Forgot Password?
+                </Link>
               </div>
 
-              <Button onClick={handleSubmit} className="w-full comic-btn uppercase font-black">
-                LOGIN
+              <Button type="submit" className="h-11 w-full">
+                Log in
               </Button>
 
-              <div className="text-center text-sm text-black font-bold border-t-2 border-black pt-4">
+              <div className="border-t border-neutral-100 pt-4 text-center text-sm text-neutral-500">
                 Don't have an account?{" "}
-                <span className="text-black cursor-pointer font-black hover:underline">
-                  <Link to={"/register"}>SIGN UP</Link>
+                <span className="cursor-pointer font-semibold text-neutral-950 hover:underline">
+                  <Link to={"/register"}>Sign up</Link>
                 </span>
               </div>
             </CardContent>

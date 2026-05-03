@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { commentApi } from "@/api/commentApi";
 import { ReplyItem } from "./replyItem";
 import { getProperImageUrl } from "@/utils/imageUtils";
+import { timeAgo } from "@/utils/timeAgo";
 
 interface Reply {
   comment_id: number;
@@ -40,19 +41,6 @@ export function CommentItem({ comment, onCommentRefresh }: CommentItemProps) {
 
   const initials = (comment.display_name || comment.user_name || "?")[0].toUpperCase();
 
-  function timeAgo(created_at: string): string {
-    const now = new Date();
-    const createdDate = new Date(created_at);
-    const seconds = Math.floor((now.getTime() - createdDate.getTime()) / 1000);
-
-    if (seconds < 60) return "now";
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`;
-    if (seconds < 604800) return `${Math.floor(seconds / 86400)}d`;
-
-    return createdDate.toLocaleDateString();
-  }
-
  const handleSubmitReply = async()=>{
     if(!replyText.trim())return;
     setIsSubmittingReply(true);
@@ -77,17 +65,17 @@ export function CommentItem({ comment, onCommentRefresh }: CommentItemProps) {
     }
   };
   return (
-    <div className="border-2 border-gray-300 rounded-xl p-4 hover:border-black transition-all duration-300 hover:shadow-md bg-white">
+    <div className="rounded-2xl border border-neutral-200 bg-white p-4 transition-colors hover:bg-neutral-50">
       <div className="flex gap-3">
         <button
           onClick={() => navigate(`/profile/${comment.user_name}`)}
           className="hover:opacity-80 transition-opacity duration-200"
         >
-          <Avatar className="w-10 h-10 border-2 border-gray-300 flex-shrink-0 hover:border-black transition-colors duration-300">
+          <Avatar className="h-10 w-10 flex-shrink-0">
             {comment.profile_image && (
               <AvatarImage src={getProperImageUrl(comment.profile_image) || ""} alt={comment.display_name} />
             )}
-            <AvatarFallback className="font-black text-xs bg-green-100">
+            <AvatarFallback className="text-xs">
               {initials}
             </AvatarFallback>
           </Avatar>
@@ -97,24 +85,24 @@ export function CommentItem({ comment, onCommentRefresh }: CommentItemProps) {
           <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={() => navigate(`/profile/${comment.user_name}`)}
-              className="font-bold uppercase text-sm hover:underline transition-all duration-200"
+              className="text-sm font-semibold text-neutral-950 hover:underline"
             >
               {comment.display_name || comment.user_name}
             </button>
-            <span className="text-gray-500 text-xs">@{comment.user_name}</span>
-            <span className="text-gray-400 text-xs">·</span>
-            <span className="text-gray-500 text-xs">{timeAgo(comment.created_at)}</span>
+            <span className="text-xs text-neutral-500">@{comment.user_name}</span>
+            <span className="text-xs text-neutral-300">·</span>
+            <span className="text-xs text-neutral-500">{timeAgo(comment.created_at)}</span>
           </div>
 
-          <p className="text-sm font-bold mt-2 break-words leading-relaxed">
+          <p className="mt-2 break-words text-sm leading-6 text-neutral-700">
             {comment.content}
           </p>
 
           {/* Action Buttons */}
-          <div className="flex gap-4 mt-3 pt-2 border-t border-gray-200">
+          <div className="mt-3 flex gap-4 border-t border-neutral-100 pt-2">
             <button
               onClick={toggleReplyInput}
-              className="flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-blue-500 transition-all duration-200 hover:scale-110 active:scale-95"
+              className="flex items-center gap-1 text-xs font-medium text-neutral-500 transition-colors hover:text-blue-600"
             >
               <MessageCircle size={14} />
               Reply

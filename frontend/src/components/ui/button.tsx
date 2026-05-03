@@ -5,20 +5,20 @@ import { Slot } from "radix-ui"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center font-black text-sm whitespace-nowrap transition-all outline-none select-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-full font-semibold text-sm whitespace-nowrap transition-colors outline-none select-none focus-visible:ring-2 focus-visible:ring-neutral-950/20 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
-        default: "bg-black text-white border-2 border-black hover:bg-gray-900 active:translate-y-px",
+        default: "bg-neutral-950 text-white border border-neutral-950 hover:bg-neutral-800",
         outline:
-          "bg-white text-black border-2 border-black hover:bg-gray-100 active:translate-y-px",
+          "bg-white text-neutral-950 border border-neutral-200 hover:bg-neutral-50",
         secondary:
-          "bg-gray-300 text-black border-2 border-black hover:bg-gray-400 active:translate-y-px",
+          "bg-neutral-100 text-neutral-950 border border-neutral-200 hover:bg-neutral-200",
         ghost:
-          "bg-transparent text-black border-2 border-black hover:bg-gray-100 active:translate-y-px",
+          "bg-transparent text-neutral-700 border border-transparent hover:bg-neutral-100 hover:text-neutral-950",
         destructive:
-          "bg-black text-white border-2 border-black hover:bg-gray-900 active:translate-y-px",
-        link: "text-black underline-offset-4 hover:underline",
+          "bg-red-600 text-white border border-red-600 hover:bg-red-700",
+        link: "text-neutral-950 underline-offset-4 hover:underline",
       },
       size: {
         default:
@@ -26,12 +26,12 @@ const buttonVariants = cva(
         xs: "h-6 gap-1 px-2 text-xs has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3",
         sm: "h-7 gap-1 px-2.5 text-[0.8rem] has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5",
         lg: "h-9 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
-        icon: "size-8 border-2 border-black",
+        icon: "size-8",
         "icon-xs":
-          "size-6 border-2 border-black [&_svg:not([class*='size-'])]:size-3",
+          "size-6 [&_svg:not([class*='size-'])]:size-3",
         "icon-sm":
-          "size-7 border-2 border-black",
-        "icon-lg": "size-9 border-2 border-black",
+          "size-7",
+        "icon-lg": "size-9",
       },
     },
     defaultVariants: {

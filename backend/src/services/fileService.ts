@@ -15,7 +15,15 @@ const storage = multer.diskStorage({
   },
 });
 const fileFilter = (req:Request,file:Express.Multer.File, cb:multer.FileFilterCallback)=>{
-    const allowedFiles = ['image/jpeg','image/png', 'image/gif'];
+    const allowedFiles = [
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'video/mp4',
+      'video/webm',
+      'video/ogg',
+    ];
     if(allowedFiles.includes(file.mimetype)){
         cb(null,true)
     }
@@ -27,6 +35,6 @@ const fileFilter = (req:Request,file:Express.Multer.File, cb:multer.FileFilterCa
     storage,
     fileFilter,
     limits:{
-        fileSize:5*1024*1024 // 5mb
+        fileSize:25*1024*1024
     }
 });

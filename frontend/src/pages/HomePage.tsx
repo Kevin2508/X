@@ -3,28 +3,27 @@ import { RightPanel } from "@/components/RightPanel";
 import Sidebar  from "@/components/Sidebar";
 import { TweetForm } from "@/components/TweetForm";
 import { TweetList } from "@/components/TweetList";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 
 export function HomePage() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 min-h-screen bg-white">
-      {/* Sidebar */}
-      <div className="hidden md:block md:col-span-1 border-r-2 border-black">
+    <div className="min-h-screen bg-neutral-50 md:grid md:grid-cols-[220px_minmax(0,1fr)] lg:grid-cols-[240px_minmax(0,680px)_320px]">
+      <div className="hidden md:block">
         <Sidebar />
       </div>
 
-      {/* Feed */}
-      <div className="col-span-1 md:col-span-2 lg:col-span-3 border-r-2 border-black">
+      <main className="min-w-0 border-x border-neutral-200 bg-white pb-20 md:pb-0">
         <Navbar />
-        <div className="p-4 space-y-4">
+        <div className="space-y-4 p-3 sm:p-4">
           <TweetForm />
           <TweetList />
         </div>
-      </div>
+      </main>
 
-      {/* Right Panel */}
-      <div className="hidden lg:block lg:col-span-1">
+      <div className="hidden lg:block">
         <RightPanel />
       </div>
+      <MobileBottomNav />
     </div>
   );
 }

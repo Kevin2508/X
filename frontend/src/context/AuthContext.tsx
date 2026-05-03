@@ -16,26 +16,23 @@ interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (user: User, token: string) => void;
+  login: (user: User, token: string, rememberMe?: boolean) => void;
   logout: () => void;
   setUser: (user: User) => void;
 }
 
-// Create the context
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Create the provider wrapper
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUserState] = useState<User | null>(null);
   const [token, setTokenState] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // On app load, restore user from localStorage if token exists
   useEffect(() => {
     const restoreAuth = () => {
       try {
-        const savedToken = localStorage.getItem('token');
-        const savedUser = localStorage.getItem('user');
+        const savedToken = localStorage.getItem('token') ?? sessionStorage.getItem('token');
+        const savedUser = localStorage.getItem('user') ?? sessionStorage.getItem('user');
 
         console.log('Restoring auth...', { savedToken: !!savedToken, savedUser: !!savedUser });
 
@@ -47,8 +44,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.error('Failed to restore auth:', error);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('user');
       } finally {
-        // Mark loading as complete AFTER trying to restore
         setIsLoading(false);
       }
     };
@@ -56,11 +54,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     restoreAuth();
   }, []); // Run only once on mount
 
-  const login = (newUser: User, newToken: string) => {
+  const login = (newUser: User, newToken: string, rememberMe = true) => {
     setUserState(newUser);
     setTokenState(newToken);
-    localStorage.setItem('token', newToken);
-    localStorage.setItem('user', JSON.stringify(newUser));
+    const primaryStorage = rememberMe ? localStorage : sessionStorage;
+    const secondaryStorage = rememberMe ? sessionStorage : localStorage;
+
+    secondaryStorage.removeItem('token');
+    secondaryStorage.removeItem('user');
+    primaryStorage.setItem('token', newToken);
+    primaryStorage.setItem('user', JSON.stringify(newUser));
   };
 
   const logout = () => {
@@ -68,11 +71,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setTokenState(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
   };
 
   const setUser = (updatedUser: User) => {
     setUserState(updatedUser);
-    localStorage.setItem('user', JSON.stringify(updatedUser));
+    const storage = localStorage.getItem('token') ? localStorage : sessionStorage;
+    storage.setItem('user', JSON.stringify(updatedUser));
   };
 
   return (

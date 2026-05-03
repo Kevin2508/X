@@ -4,29 +4,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
+import { RefreshCw } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-interface signUpBody {
-  display_name: string;
-  user_name: string;
-  email: string;
-  password: string;
-  captcha: unknown;
-  user:any;
-  token:string;
+
+interface SignUpResponse {
+  user: any;
+  token: string;
 }
+
 export default function RegisterPage() {
   const [display_name, setdisplay_name] = useState("");
   const [user_name, setuser_name] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  
   const [imageCaptcha, setImageCaptcha] = useState("");
   const [textCaptcha, setTextCaptcha] = useState("");
   const [captchaFetchTime, setCaptchaFetchTime] = useState<number>(0);
   const navigate = useNavigate();
-  const {login} = useAuth();
+  const { login } = useAuth();
 
   const fetchCaptcha = async (refresh = false) => {
     try {
@@ -40,9 +37,7 @@ export default function RegisterPage() {
       console.error("Error fetching captcha:", error);
     }
   };
-  const refreshCaptcha = function () {
-    fetchCaptcha(true);
-  };
+
   useEffect(() => {
     fetchCaptcha(true);
   }, []);
@@ -55,146 +50,118 @@ export default function RegisterPage() {
       setTextCaptcha("");
       return;
     }
-    const correctCaptcha = sessionStorage.getItem("captcha_answer");
-    if (textCaptcha === correctCaptcha) {
-      console.log("Login successs");
-    } else {
-  
-      fetchCaptcha();
+
+    if (password !== confirmPassword) {
+      return;
     }
-    const formData = {
-      display_name,
-      user_name,
-      email,
-      password,
-      captcha: textCaptcha,
-    };
 
     try {
-      const res = await API.post<signUpBody>("/auth/signup", formData);
-      const result = res;
-      console.log(result);
-      if (result) {
-        setEmail("");
-        setuser_name("");
-        setdisplay_name("");
-        
-        setPassword("");
-        setTextCaptcha("");
-const {user,token} = res.data;
-login(user,token);
-        navigate("/login");
-      } else {
-        fetchCaptcha();
-      }
+      const res = await API.post<SignUpResponse>("/auth/signup", {
+        display_name,
+        user_name,
+        email,
+        password,
+        captcha: textCaptcha,
+      });
+
+      setEmail("");
+      setuser_name("");
+      setdisplay_name("");
+      setPassword("");
+      setTextCaptcha("");
+      login(res.data.user, res.data.token);
+      navigate("/login");
     } catch (error) {
       console.log(error);
+      fetchCaptcha();
     }
-    // const result = await registerUser({user_name:user_name, email:email, password:password});
   };
+
   return (
-    <>
-      <div className="min-h-screen flex items-center justify-center bg-white px-4">
-        <div className="grid md:grid-cols-2 gap-8 max-w-5xl w-full items-center">
-          {/* Left Section */}
-          <div className="hidden md:flex flex-col justify-center">
-            <h1 className="text-5xl font-black text-black mb-4 uppercase tracking-wider border-b-4 border-black pb-4">
-              Join Twitter
-            </h1>
-            <p className="text-black text-lg font-bold mt-4">
-              🚀 Create an account and start<br/>sharing your thoughts.
-            </p>
+    <div className="flex min-h-screen items-center justify-center bg-neutral-50 px-4 py-10">
+      <div className="grid w-full max-w-5xl items-center gap-10 md:grid-cols-2">
+        <div className="hidden flex-col justify-center md:flex">
+          <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-neutral-950 text-xl font-semibold text-white">
+            X
           </div>
-          <form onSubmit={handleSubmit}>
-            {/* Right Section */}
-            <Card className="w-full comic-shadow border-2 border-black">
-              <CardHeader>
-                <CardTitle className="text-2xl uppercase font-black tracking-wider">📝 CREATE ACCOUNT</CardTitle>
-              </CardHeader>
+          <h1 className="mb-4 text-5xl font-semibold tracking-tight text-neutral-950">
+            Create your account
+          </h1>
+          <p className="max-w-sm text-lg leading-8 text-neutral-500">
+            Start posting, following people, and building your own timeline.
+          </p>
+        </div>
 
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label className="font-black uppercase">📛 Display Name</Label>
-                  <Input type="text" placeholder="Enter your display name" value={display_name} onChange={(e) => setdisplay_name(e.target.value)}/>
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-black uppercase">👤 Username</Label>
-                  <Input type="text" placeholder="Enter your username" onChange={(e) => setuser_name(e.target.value)} value={user_name}/>
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-black uppercase">📧 Email</Label>
-                  <Input type="email" placeholder="Enter your email" value={email} onChange={(e) => setEmail(e.target.value)}/>
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-black uppercase">🔒 Password</Label>
-                  <Input type="password" placeholder="Create password" value={password} onChange={(e) => setPassword(e.target.value)}/>
-                </div>
+        <form onSubmit={handleSubmit}>
+          <Card className="w-full border-neutral-200 p-2 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-2xl font-semibold tracking-tight">
+                Sign up
+              </CardTitle>
+            </CardHeader>
 
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label className="font-black uppercase">✓ Confirm Password</Label>
-                  <Input type="password" placeholder="Confirm password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}/>
+                  <Label>Display name</Label>
+                  <Input value={display_name} onChange={(e) => setdisplay_name(e.target.value)} placeholder="Your name" />
                 </div>
+                <div className="space-y-2">
+                  <Label>Username</Label>
+                  <Input value={user_name} onChange={(e) => setuser_name(e.target.value)} placeholder="username" />
+                </div>
+              </div>
 
-                {/* Captcha */}
-                <div className="space-y-2 border-2 border-black p-3">
-                  <div dangerouslySetInnerHTML={{ __html: imageCaptcha }} />
-                  <span onClick={refreshCaptcha} className="cursor-pointer hover:opacity-70">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      x="0px"
-                      y="0px"
-                      width="30"
-                      height="30"
-                      viewBox="0,0,256,256"
-                    >
-                      <g
-                        fill="#000000"
-                        fillRule="nonzero"
-                        stroke="none"
-                        strokeWidth="1"
-                        strokeLinecap="butt"
-                        strokeLinejoin="miter"
-                        strokeMiterlimit="10"
-                        strokeDasharray=""
-                        strokeDashoffset="0"
-                        fontFamily="none"
-                        fontWeight="none"
-                        fontSize="none"
-                        textAnchor="start"
-                      >
-                        <g transform="scale(8.53333,8.53333)">
-                          <path d="M15,3c-2.94691,0 -5.67058,1.08978 -7.74414,2.83594c-0.27716,0.2291 -0.40998,0.58936 -0.34789,0.94355c0.0621,0.35419 0.30956,0.64777 0.64813,0.76892c0.33857,0.12115 0.71611,0.05121 0.98882,-0.18317c1.72644,-1.45384 4.00199,-2.36523 6.45508,-2.36523c5.22661,0 9.45668,3.91362 9.95117,9h-2.95117l4,6l4,-6h-3.05078c-0.508,-6.16514 -5.65128,-11 -11.94922,-11zM4.30078,9l-4,6h2.69922c0,6.63552 5.36448,12 12,12c2.94691,0 5.67058,-1.08978 7.74414,-2.83594c0.27717,-0.2291 0.41,-0.58936 0.3479,-0.94356c-0.0621,-0.35419 -0.30957,-0.64778 -0.64814,-0.76893c-0.33857,-0.12115 -0.71612,-0.0512 -0.98883,0.18319c-1.72644,1.45384 -4.00199,2.36523 -6.45508,2.36523c-5.56448,0 -10,-4.43552 -10,-10h3.30078z"></path>
-                        </g>
-                      </g>
-                    </svg>
-                  </span>
-                  <Label className="font-black uppercase block mt-2">🔐 Captcha</Label>
+              <div className="space-y-2">
+                <Label>Email</Label>
+                <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Password</Label>
+                  <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create password" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Confirm password</Label>
+                  <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Repeat password" />
+                </div>
+              </div>
+
+              <div className="space-y-3 rounded-2xl border border-neutral-200 p-3">
+                <div className="overflow-hidden rounded-xl bg-neutral-50" dangerouslySetInnerHTML={{ __html: imageCaptcha }} />
+                <button
+                  type="button"
+                  onClick={() => fetchCaptcha(true)}
+                  className="flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100"
+                >
+                  <RefreshCw size={16} />
+                  Refresh captcha
+                </button>
+                <div className="space-y-2">
+                  <Label>Captcha</Label>
                   <Input
-                    onChange={(e) => {
-                      setTextCaptcha(e.target.value);
-                    }}
+                    value={textCaptcha}
+                    onChange={(e) => setTextCaptcha(e.target.value)}
                     placeholder="Enter captcha"
                   />
-                  <div className="bg-black text-white text-center py-2 font-black text-sm border-2 border-black">
-                    8K2L4
-                  </div>
                 </div>
+              </div>
 
-                <Button type="submit" className="w-full comic-btn uppercase font-black">
-                  REGISTER
-                </Button>
+              <Button type="submit" className="h-11 w-full">
+                Register
+              </Button>
 
-                <div className="text-center text-sm text-black font-bold border-t-2 border-black pt-4">
-                  Already have an account?{" "}
-                  <span className="text-black cursor-pointer font-black hover:underline">
-                    <Link to="/login">LOGIN</Link>
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          </form>
-        </div>
+              <div className="border-t border-neutral-100 pt-4 text-center text-sm text-neutral-500">
+                Already have an account?{" "}
+                <Link to="/login" className="font-semibold text-neutral-950 hover:underline">
+                  Log in
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </form>
       </div>
-    </>
+    </div>
   );
 }

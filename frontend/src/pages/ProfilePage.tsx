@@ -8,6 +8,7 @@ import { UserTweets } from "@/components/UserTweets";
 import { EditProfileModal } from "@/components/EditProfileModal";
 import { RightPanel } from "@/components/RightPanel";
 import { Loader2, ArrowLeft } from "lucide-react";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 
 interface UserProfile {
   user_id: number;
@@ -135,20 +136,20 @@ export function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-white">
-        <Loader2 className="animate-spin text-black mb-4" size={48} />
-        <p className="font-bold text-gray-600">Loading profile...</p>
+      <div className="flex min-h-screen flex-col items-center justify-center bg-neutral-50">
+        <Loader2 className="mb-4 animate-spin text-neutral-950" size={40} />
+        <p className="font-medium text-neutral-500">Loading profile...</p>
       </div>
     );
   }
 
   if (error || !user) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-white">
-        <p className="text-red-500 font-bold text-xl mb-4">{error || "User not found"}</p>
+      <div className="flex min-h-screen flex-col items-center justify-center bg-neutral-50">
+        <p className="mb-4 text-xl font-semibold text-red-600">{error || "User not found"}</p>
         <button
           onClick={() => navigate("/")}
-          className="px-6 py-2 bg-black text-white font-bold rounded-lg hover:bg-gray-800 transition-all duration-200"
+          className="rounded-full bg-neutral-950 px-6 py-2 font-semibold text-white transition-colors hover:bg-neutral-800"
         >
           Back to Home
         </button>
@@ -157,12 +158,11 @@ export function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5">
-      {/* Sidebar - Back Button */}
-      <div className="hidden md:block md:col-span-1 border-r-2 border-black p-4">
+    <div className="min-h-screen bg-neutral-50 md:grid md:grid-cols-[220px_minmax(0,1fr)] lg:grid-cols-[240px_minmax(0,680px)_320px]">
+      <div className="hidden border-r border-neutral-200 bg-white p-4 md:block">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-all duration-200 font-bold"
+          className="flex items-center gap-2 rounded-full px-4 py-2 font-medium text-neutral-700 transition-colors hover:bg-neutral-100"
         >
           <ArrowLeft size={20} />
           Back
@@ -170,18 +170,17 @@ export function ProfilePage() {
       </div>
 
       {/* Profile Content */}
-      <div className="col-span-1 md:col-span-2 lg:col-span-3 border-r-2 border-black max-h-screen overflow-y-auto">
-        {/* Mobile Back Button */}
-        <div className="md:hidden p-4 border-b-2 border-black flex items-center gap-2">
+      <main className="max-h-screen overflow-y-auto border-x border-neutral-200 bg-white pb-20 md:pb-0">
+        <div className="flex items-center gap-2 border-b border-neutral-200 p-4 md:hidden">
           <button
             onClick={() => navigate(-1)}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-all duration-200"
+            className="rounded-full p-2 transition-colors hover:bg-neutral-100"
           >
             <ArrowLeft size={20} />
           </button>
           <div>
-            <p className="font-black uppercase">{user.display_name || user.user_name}</p>
-            <p className="text-xs text-gray-500">{tweetsCount} Posts</p>
+            <p className="font-semibold text-neutral-950">{user.display_name || user.user_name}</p>
+            <p className="text-xs text-neutral-500">{tweetsCount} Posts</p>
           </div>
         </div>
 
@@ -202,10 +201,10 @@ export function ProfilePage() {
 
         {/* Tab Content */}
         <UserTweets userId={user.user_id} tab={activeTab} />
-      </div>
+      </main>
 
       {/* Right Sidebar - Coming Soon */}
-      <div className="hidden lg:block lg:col-span-1 border-l-2 border-black p-6">
+      <div className="hidden lg:block">
         <RightPanel />
       </div>
 
@@ -218,6 +217,7 @@ export function ProfilePage() {
           onProfileUpdate={handleProfileUpdate}
         />
       )}
+      <MobileBottomNav />
     </div>
   );
 }

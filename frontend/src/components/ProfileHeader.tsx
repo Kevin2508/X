@@ -43,9 +43,8 @@ export function ProfileHeader({
   const initials = (user.display_name || user.user_name || "?")[0].toUpperCase();
 
   return (
-    <div className="bg-white border-b-2 border-black">
-      {/* Cover Image */}
-      <div className="h-48 bg-gradient-to-r from-purple-300 via-blue-300 to-pink-300 border-b-2 border-black relative overflow-hidden">
+    <div className="border-b border-neutral-200 bg-white">
+      <div className="relative h-44 overflow-hidden bg-neutral-100 sm:h-52">
         {user.cover_image && (
           <img
             src={getProperImageUrl(user.cover_image) || ""}
@@ -53,40 +52,37 @@ export function ProfileHeader({
             className="w-full h-full object-cover"
           />
         )}
-        <div className="absolute inset-0 bg-black/5 hover:bg-black/10 transition-all duration-300" />
+        <div className="absolute inset-0 bg-black/5" />
       </div>
 
-      {/* Profile Info */}
-      <div className="px-4 py-0 relative">
-        {/* Profile Picture */}
-        <div className="flex items-end gap-4 mb-4">
+      <div className="relative px-4 sm:px-6">
+        <div className="mb-4 flex items-end gap-4">
           <div className="-mt-16 relative z-10">
-            <Avatar className="w-32 h-32 border-4 border-black shadow-lg">
+            <Avatar className="h-28 w-28 border-4 border-white shadow-sm sm:h-32 sm:w-32">
               {user.profile_image && (
                 <AvatarImage src={getProperImageUrl(user.profile_image) || ""} alt={user.display_name} />
               )}
-              <AvatarFallback className="font-black text-3xl bg-purple-200">
+              <AvatarFallback className="text-3xl">
                 {initials}
               </AvatarFallback>
             </Avatar>
           </div>
 
-          {/* Action Button */}
           <div className="ml-auto mb-4">
             {isOwnProfile ? (
               <button
                 onClick={onEditProfile}
-                className="px-6 py-2 bg-black text-white font-black rounded-full border-2 border-black hover:bg-white hover:text-black transition-all duration-200 hover:scale-105 active:scale-95 uppercase text-sm"
+                className="rounded-full border border-neutral-200 bg-white px-5 py-2 text-sm font-semibold text-neutral-950 transition-colors hover:bg-neutral-50"
               >
                 Edit Profile
               </button>
             ) : (
               <button
                 onClick={onFollow}
-                className={`px-6 py-2 font-black rounded-full border-2 transition-all duration-200 hover:scale-105 active:scale-95 uppercase text-sm ${
+                className={`rounded-full border px-5 py-2 text-sm font-semibold transition-colors ${
                   isFollowing
-                    ? "bg-white text-black border-black hover:bg-red-50"
-                    : "bg-black text-white border-black hover:bg-gray-800"
+                    ? "border-neutral-200 bg-white text-neutral-950 hover:bg-red-50 hover:text-red-600"
+                    : "border-neutral-950 bg-neutral-950 text-white hover:bg-neutral-800"
                 }`}
               >
                 {isFollowing ? "Following" : "Follow"}
@@ -95,29 +91,28 @@ export function ProfileHeader({
           </div>
         </div>
 
-        {/* User Info */}
         <div className="pb-4">
           <div className="flex items-center gap-2 mb-1">
-            <h1 className="font-black text-2xl uppercase tracking-wider">
+            <h1 className="text-2xl font-semibold tracking-tight text-neutral-950">
               {user.display_name || user.user_name}
             </h1>
             {user.is_verified && (
-              <div className="w-5 h-5 bg-blue-400 rounded-full flex items-center justify-center text-white font-bold text-xs">
+              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-xs font-semibold text-white">
                 ✓
               </div>
             )}
           </div>
-          <p className="text-gray-500 font-bold">@{user.user_name}</p>
+          <p className="text-sm text-neutral-500">@{user.user_name}</p>
 
           {/* Bio */}
           {user.bio && (
-            <p className="text-base font-bold mt-3 leading-relaxed">
+            <p className="mt-3 text-base leading-7 text-neutral-800">
               {user.bio}
             </p>
           )}
 
           {/* Metadata */}
-          <div className="flex flex-wrap gap-4 mt-3 text-sm font-bold text-gray-600">
+          <div className="mt-3 flex flex-wrap gap-4 text-sm text-neutral-500">
             {user.country && (
               <div className="flex items-center gap-1">
                 <MapPin size={16} />
@@ -131,24 +126,24 @@ export function ProfileHeader({
           </div>
 
           {/* Stats */}
-          <div className="flex gap-6 mt-4 pt-3 border-t-2 border-gray-200">
-            <div className="cursor-pointer hover:text-purple-600 transition-colors duration-200">
-              <span className="font-black text-lg">{tweetsCount}</span>
-              <span className="text-gray-500 text-sm font-bold ml-1">
+          <div className="mt-4 flex gap-6 border-t border-neutral-100 pt-3">
+            <div className="cursor-pointer transition-colors hover:text-neutral-950">
+              <span className="text-lg font-semibold">{tweetsCount}</span>
+              <span className="ml-1 text-sm text-neutral-500">
                 {tweetsCount === 1 ? "Post" : "Posts"}
               </span>
             </div>
 
-            <div className="cursor-pointer hover:text-blue-600 transition-colors duration-200">
-              <span className="font-black text-lg">{following}</span>
-              <span className="text-gray-500 text-sm font-bold ml-1">
+            <div className="cursor-pointer transition-colors hover:text-neutral-950">
+              <span className="text-lg font-semibold">{following}</span>
+              <span className="ml-1 text-sm text-neutral-500">
                 Following
               </span>
             </div>
 
-            <div className="cursor-pointer hover:text-pink-600 transition-colors duration-200">
-              <span className="font-black text-lg">{followers}</span>
-              <span className="text-gray-500 text-sm font-bold ml-1">
+            <div className="cursor-pointer transition-colors hover:text-neutral-950">
+              <span className="text-lg font-semibold">{followers}</span>
+              <span className="ml-1 text-sm text-neutral-500">
                 {followers === 1 ? "Follower" : "Followers"}
               </span>
             </div>

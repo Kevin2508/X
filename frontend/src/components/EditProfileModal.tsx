@@ -151,17 +151,16 @@ export function EditProfileModal({
   return (
     <div
       onClick={handleBackdropClick}
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/40 p-4 backdrop-blur-sm animate-in fade-in"
     >
-      <div className="w-full max-w-2xl max-h-[90vh] bg-white rounded-2xl border-2 border-black shadow-2xl overflow-hidden flex flex-col animate-in scale-in-95">
-        {/* Header */}
-        <div className="sticky top-0 bg-white border-b-2 border-black px-6 py-4 flex justify-between items-center">
-          <h2 className="font-black text-lg uppercase tracking-wider">
+      <div className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-2xl animate-in scale-in-95">
+        <div className="sticky top-0 flex items-center justify-between border-b border-neutral-200 bg-white px-6 py-4">
+          <h2 className="text-lg font-semibold tracking-tight text-neutral-950">
             Edit Profile
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95"
+            className="rounded-full p-2 transition-colors hover:bg-neutral-100"
           >
             <X size={24} className="font-bold" />
           </button>
@@ -172,12 +171,12 @@ export function EditProfileModal({
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             {/* Cover Image */}
             <div>
-              <label className="font-black uppercase text-sm mb-2 block">
+              <label className="mb-2 block text-sm font-medium text-neutral-700">
                 Cover Image
               </label>
               <div
                 onClick={() => coverInputRef.current?.click()}
-                className="relative h-40 bg-gradient-to-r from-purple-300 via-blue-300 to-pink-300 rounded-xl border-2 border-black cursor-pointer hover:opacity-80 transition-opacity duration-200 overflow-hidden group"
+                className="group relative h-40 cursor-pointer overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-100 transition-opacity hover:opacity-90"
               >
                 {coverImagePreview && (
                   <img
@@ -206,7 +205,7 @@ export function EditProfileModal({
 
             {/* Profile Image */}
             <div>
-              <label className="font-black uppercase text-sm mb-2 block">
+              <label className="mb-2 block text-sm font-medium text-neutral-700">
                 Profile Picture
               </label>
               <div className="flex gap-4 items-start">
@@ -214,14 +213,14 @@ export function EditProfileModal({
                   onClick={() => profileInputRef.current?.click()}
                   className="relative cursor-pointer"
                 >
-                  <Avatar className="w-24 h-24 border-4 border-black shrink-0 group/avatar">
+                  <Avatar className="h-24 w-24 shrink-0 border-4 border-white shadow-sm">
                     {profileImagePreview && (
                       <AvatarImage
                         src={normalizePreview(profileImagePreview)}
                         alt="profile preview"
                       />
                     )}
-                    <AvatarFallback className="font-black text-2xl bg-purple-200">
+                    <AvatarFallback className="text-2xl">
                       {initials}
                     </AvatarFallback>
                   </Avatar>
@@ -231,11 +230,11 @@ export function EditProfileModal({
                 </div>
 
                 <div className="flex-1">
-                  <p className="text-xs text-gray-500 font-bold mb-2">
+                  <p className="mb-2 text-xs text-neutral-500">
                     Click avatar to upload a profile picture (JPG, PNG, GIF)
                   </p>
                   {profileImageFile && (
-                    <div className="text-xs font-bold text-green-600">
+                    <div className="text-xs font-medium text-green-600">
                       ✓ {profileImageFile.name}
                     </div>
                   )}
@@ -252,7 +251,7 @@ export function EditProfileModal({
 
             {/* Display Name */}
             <div>
-              <label className="font-black uppercase text-sm mb-2 block">
+              <label className="mb-2 block text-sm font-medium text-neutral-700">
                 Display Name
               </label>
               <input
@@ -260,14 +259,14 @@ export function EditProfileModal({
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 maxLength={50}
-                className="w-full border-2 border-black rounded-lg p-3 font-bold focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+                className="w-full rounded-xl border border-neutral-200 bg-white p-3 text-sm focus:outline-none focus:ring-4 focus:ring-neutral-950/5"
                 placeholder="Your display name"
               />
             </div>
 
             {/* Bio */}
             <div>
-              <label className="font-black uppercase text-sm mb-2 block">
+              <label className="mb-2 block text-sm font-medium text-neutral-700">
                 Bio
               </label>
               <textarea
@@ -275,17 +274,17 @@ export function EditProfileModal({
                 onChange={(e) => setBio(e.target.value)}
                 maxLength={160}
                 rows={3}
-                className="w-full border-2 border-black rounded-lg p-3 font-bold resize-none focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+                className="w-full resize-none rounded-xl border border-neutral-200 bg-white p-3 text-sm focus:outline-none focus:ring-4 focus:ring-neutral-950/5"
                 placeholder="Tell everyone about yourself"
               />
-              <p className="text-xs text-gray-500 font-bold mt-1">
+              <p className="mt-1 text-xs text-neutral-500">
                 {bio.length}/160
               </p>
             </div>
 
             {/* Country */}
             <div>
-              <label className="font-black uppercase text-sm mb-2 block">
+              <label className="mb-2 block text-sm font-medium text-neutral-700">
                 Country
               </label>
               <input
@@ -293,38 +292,38 @@ export function EditProfileModal({
                 value={country}
                 onChange={(e) => setCountry(e.target.value)}
                 maxLength={50}
-                className="w-full border-2 border-black rounded-lg p-3 font-bold focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+                className="w-full rounded-xl border border-neutral-200 bg-white p-3 text-sm focus:outline-none focus:ring-4 focus:ring-neutral-950/5"
                 placeholder="Your country"
               />
             </div>
 
             {/* Messages */}
             {error && (
-              <div className="bg-red-50 border-2 border-red-500 rounded-lg p-3">
-                <p className="text-red-600 font-bold text-sm">{error}</p>
+              <div className="rounded-xl border border-red-200 bg-red-50 p-3">
+                <p className="text-sm font-medium text-red-600">{error}</p>
               </div>
             )}
 
             {success && (
-              <div className="bg-green-50 border-2 border-green-500 rounded-lg p-3">
-                <p className="text-green-600 font-bold text-sm">{success}</p>
+              <div className="rounded-xl border border-green-200 bg-green-50 p-3">
+                <p className="text-sm font-medium text-green-600">{success}</p>
               </div>
             )}
 
             {/* Action Buttons */}
-            <div className="flex gap-3 pt-4 border-t-2 border-black">
+            <div className="flex gap-3 border-t border-neutral-100 pt-4">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={isSubmitting}
-                className="flex-1 px-4 py-3 border-2 border-black rounded-lg font-black uppercase text-sm hover:bg-gray-100 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 rounded-full border border-neutral-200 px-4 py-3 text-sm font-semibold transition-colors hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 px-4 py-3 bg-black text-white border-2 border-black rounded-lg font-black uppercase text-sm hover:bg-gray-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex flex-1 items-center justify-center gap-2 rounded-full border border-neutral-950 bg-neutral-950 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <>

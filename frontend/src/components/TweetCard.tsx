@@ -2,15 +2,22 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Card } from "./ui/card";
-import { Heart, MessageCircle, Repeat2, Share } from "lucide-react";
+import { Heart, MessageCircle, Repeat2, Share, Trash2 } from "lucide-react";
 import API from "@/api/axios";
 import { TweetThreadDetail } from "./TweetThreadDetail";
 import { getProperImageUrl } from "@/utils/imageUtils";
+import { useAuth } from "@/context/AuthContext";
+import { timeAgo } from "@/utils/timeAgo";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type MediaType = "image" | "video" | null;
 type TweetType = "tweet" | "repost";
+
+interface TweetMediaItem {
+  media: string;
+  media_type: MediaType;
+}
 
 interface TweetCardProps {
     tweet_id:number;
@@ -21,6 +28,7 @@ interface TweetCardProps {
   profile_image: string | null;
   media: string | null;
   media_type: MediaType;
+  media_items?: TweetMediaItem[];
   like_count: number;
   retweet_count: number;
   isLiked: boolean;
@@ -31,20 +39,10 @@ interface TweetCardProps {
   onLike?: () => void;
   onRetweet?: () => void;
   onComment?: () => void;
+  onDelete?: (tweetId: number) => void;
 }
 
 // ─── Helper ──────────────────────────────────────────────────────────────────
-
-function timeAgo(dateStr: string): string {
-  const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-  if (diff < 60) return `${diff}s`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}m`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-}
 
 function getMediaUrl(mediaPath: string | null | undefined): string | null {
   if (!mediaPath) return null;
@@ -81,6 +79,7 @@ export function TweetCard({
   profile_image,
   media,
   media_type,
+  media_items = [],
   like_count,
   retweet_count,
   isLiked,
@@ -91,14 +90,19 @@ export function TweetCard({
   onLike,
   onRetweet,
   onComment,
+  onDelete,
 }: TweetCardProps) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [showThread,setShowThread] = useState(false);
   const [focusComment, setFocusComment] = useState(false);
   const [liked, setLiked] = useState<boolean>(isLiked);
   const [retweeted, setRetweeted] = useState<boolean>(isRetweeted);
   const [likes, setLikes] = useState<number>(like_count);
   const [retweets, setRetweets] = useState<number>(retweet_count);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+  const canDelete = type === "tweet" && user?.user_name === user_name;
 
   // Handle Like
   const handleLike = async (): Promise<void> => {
@@ -135,16 +139,42 @@ export function TweetCard({
     console.error("Failed to update Retweet:", error);
     }
   };
-  const mediaUrl = getMediaUrl(media);
+
+  const handleDelete = async (): Promise<void> => {
+    if (!canDelete || isDeleting) return;
+
+    const confirmed = window.confirm("Delete this tweet?");
+    if (!confirmed) return;
+
+    setIsDeleting(true);
+    setDeleteError("");
+
+    try {
+      await API.delete(`/tweets/${tweet_id}`);
+      onDelete?.(tweet_id);
+    } catch (error) {
+      setDeleteError("Failed to delete tweet");
+      console.error("Failed to delete tweet:", error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const mediaItems =
+    media_items.length > 0
+      ? media_items
+      : media
+        ? [{ media, media_type }]
+        : [];
 
   const initials: string = (display_name || user_name || "?")[0].toUpperCase();
 
   return (
     <>
-    <Card onClick={()=>{setShowThread(true)}} className="p-4 comic-card comic-shadow cursor-pointer hover:shadow-xl transition-all duration-300 hover:border-black border-2 hover:-translate-y-1">
+    <Card onClick={()=>{setShowThread(true)}} className="cursor-pointer border-neutral-200 p-4 shadow-sm transition-colors hover:bg-neutral-50">
       {/* Repost label */}
       {type === "repost" && (
-        <div className="flex items-center gap-1 text-xs text-gray-500 mb-2 ml-10 font-bold">
+        <div className="mb-2 ml-10 flex items-center gap-1 text-xs font-medium text-neutral-500">
           <Repeat2 size={13} />
           <span>
             {(retweeted_by_display_name || retweeted_by_user_name || "You")} retweeted this post
@@ -159,13 +189,13 @@ export function TweetCard({
             e.stopPropagation();
             navigate(`/profile/${user_name}`);
           }}
-          className="hover:opacity-80 transition-opacity duration-200"
+          className="transition-opacity hover:opacity-80"
         >
-          <Avatar className="border-2 border-black">
+          <Avatar>
             {profile_image && (
               <AvatarImage src={getProperImageUrl(profile_image) || ""} alt={display_name} />
             )}
-            <AvatarFallback className="font-black uppercase text-lg">
+            <AvatarFallback>
               {initials}
             </AvatarFallback>
           </Avatar>
@@ -173,41 +203,90 @@ export function TweetCard({
 
         <div className="flex-1 min-w-0">
           {/* Header */}
-          <div className="flex items-baseline gap-1 flex-wrap">
+          <div className="flex items-start justify-between gap-3">
+          <div className="flex items-baseline gap-1 flex-wrap min-w-0">
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 navigate(`/profile/${user_name}`);
               }}
-              className="font-black uppercase text-base hover:underline transition-all duration-200"
+              className="text-base font-semibold text-neutral-950 hover:underline"
             >
               {display_name || user_name}
             </button>
-            <span className="text-gray-500 text-sm">@{user_name}</span>
-            <span className="text-gray-400 text-sm">·</span>
-            <span className="text-gray-400 text-sm">{timeAgo(created_at)}</span>
+            <span className="text-sm text-neutral-500">@{user_name}</span>
+            <span className="text-sm text-neutral-300">·</span>
+            <span className="text-sm text-neutral-500">{timeAgo(created_at)}</span>
+          </div>
+          {canDelete && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete();
+              }}
+              disabled={isDeleting}
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-neutral-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+              title="Delete tweet"
+              aria-label="Delete tweet"
+            >
+              <Trash2 size={15} />
+            </button>
+          )}
           </div>
 
+          {deleteError && (
+            <div className="mt-2 rounded-xl border border-red-200 bg-red-50 p-2 text-xs font-medium text-red-600">
+              {deleteError}
+            </div>
+          )}
+
           {/* Content */}
-          <p className="text-black text-sm font-bold mt-2 break-words">
+          <p className="mt-2 break-words text-[15px] leading-6 text-neutral-800">
             {content}
           </p>
 
           {/* Media */}
-          {media && media_type === "image" && (
-            <img
-              src={mediaUrl || ""}
-              alt="tweet media"
-              className="mt-3 rounded-lg w-full max-h-72 object-cover border-2 border-black hover:brightness-95 transition-all duration-300"
-              onError={(e) => {
-                console.error("Failed to load image:", mediaUrl);
-                (e.target as HTMLImageElement).style.display = "none";
-              }}
-            />
+          {mediaItems.length > 0 && (
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              {mediaItems.map((item, index) => {
+                const itemUrl = getMediaUrl(item.media);
+                const isVideo = item.media_type === "video";
+
+                if (!itemUrl) return null;
+
+                return (
+                  <div
+                    key={`${item.media}-${index}`}
+                    className={`overflow-hidden rounded-2xl border border-neutral-200 ${
+                      mediaItems.length === 1 ? "col-span-2" : ""
+                    }`}
+                  >
+                    {isVideo ? (
+                      <video
+                        src={itemUrl}
+                        className="h-64 w-full object-cover"
+                        controls
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    ) : (
+                      <img
+                        src={itemUrl}
+                        alt="tweet media"
+                        className="h-64 w-full object-cover hover:brightness-95 transition-all duration-300"
+                        onError={(e) => {
+                          console.error("Failed to load image:", itemUrl);
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           )}
 
           {/* Actions */}
-          <div className="flex justify-between mt-4 text-xs font-black uppercase border-t-2 border-black pt-3">
+          <div className="mt-4 flex justify-between border-t border-neutral-100 pt-3 text-xs font-semibold text-neutral-500">
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -215,7 +294,7 @@ export function TweetCard({
                 setFocusComment(true);
                 onComment?.();
               }}
-              className="flex items-center gap-1 cursor-pointer hover:text-blue-500 transition-all duration-200 hover:scale-110 active:scale-95"
+              className="flex cursor-pointer items-center gap-1 rounded-full px-2 py-1 transition-colors hover:bg-blue-50 hover:text-blue-600"
             >
               <MessageCircle size={14} />
               <span>Comment</span>
@@ -226,7 +305,7 @@ export function TweetCard({
                 e.stopPropagation();
                 handleRetweet();
               }}
-              className={`flex items-center gap-1 cursor-pointer transition-all duration-200 hover:scale-110 active:scale-95 ${
+              className={`flex cursor-pointer items-center gap-1 rounded-full px-2 py-1 transition-colors hover:bg-green-50 ${
                 retweeted ? "text-green-600" : "hover:text-green-600"
               }`}
             >
@@ -239,7 +318,7 @@ export function TweetCard({
                 e.stopPropagation();
                 handleLike();
               }}
-              className={`flex items-center gap-1 cursor-pointer transition-all duration-200 hover:scale-110 active:scale-95 ${
+              className={`flex cursor-pointer items-center gap-1 rounded-full px-2 py-1 transition-colors hover:bg-red-50 ${
                 liked ? "text-red-500" : "hover:text-red-500"
               }`}
             >
@@ -249,7 +328,7 @@ export function TweetCard({
 
             <button
               onClick={(e) => e.stopPropagation()}
-              className="flex items-center gap-1 cursor-pointer hover:text-blue-500 transition-all duration-200 hover:scale-110 active:scale-95"
+              className="flex cursor-pointer items-center gap-1 rounded-full px-2 py-1 transition-colors hover:bg-neutral-100 hover:text-neutral-950"
             >
               <Share size={14} />
               <span>Share</span>
@@ -269,6 +348,7 @@ export function TweetCard({
           profile_image={profile_image}
           media={media}
           media_type={media_type}
+          media_items={mediaItems}
           like_count={like_count}
           retweet_count={retweet_count}
           isLiked={liked}

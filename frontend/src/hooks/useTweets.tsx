@@ -4,7 +4,7 @@ import { useState } from "react";
 
 interface CreateTweetPayload {
   content: string;
-  image?: File;
+  files?: File[];
 }
 
 interface ApiErrorResponse {
@@ -15,15 +15,13 @@ export function useTweets() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const createTweet = async ({ content, image }: CreateTweetPayload) => {
+  const createTweet = async ({ content, files = [] }: CreateTweetPayload) => {
     setLoading(true);
     setError("");
     try {
       const formData = new FormData();
       formData.append("content", content);
-      if (image) {
-        formData.append("file", image);
-      }
+      files.forEach((file) => formData.append("files", file));
       const res = await API.post("/tweets/", formData, {
         headers: {
           "Content-Type": "multipart/form-data",

@@ -1,6 +1,7 @@
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
+import { Bell, Home, LogOut, User } from "lucide-react";
 
 export default function Sidebar() {
   const navigate = useNavigate();
@@ -12,16 +13,21 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="flex flex-col gap-2 p-4 border-r-2 border-black sticky top-0 h-screen">
-      <h1 className="text-3xl font-black uppercase tracking-wider border-b-2 border-black pb-3 mb-2">
-        X
-      </h1>
-      <Button
-        onClick={() => navigate("/")}
-        className="comic-btn justify-start"
-        variant="outline"
+    <aside className="sticky top-0 flex h-screen flex-col gap-2 border-r border-neutral-200 bg-white p-4">
+      <button
+        onClick={() => navigate("/home")}
+        className="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-neutral-950 text-lg font-semibold text-white"
+        aria-label="Go home"
       >
-        HOME
+        X
+      </button>
+      <Button
+        onClick={() => navigate("/home")}
+        className="h-11 justify-start gap-3 px-4"
+        variant="ghost"
+      >
+        <Home size={18} />
+        Home
       </Button>
       <Button
         onClick={() => {
@@ -29,23 +35,36 @@ export default function Sidebar() {
             navigate(`/profile/${user.user_name}`);
           }
         }}
-        className="comic-btn justify-start"
-        variant="outline"
+        className="h-11 justify-start gap-3 px-4"
+        variant="ghost"
       >
-        PROFILE
+        <User size={18} />
+        Profile
       </Button>
-      <Button className="comic-btn justify-start" variant="outline">
-        NOTIFICATIONS
+      <Button
+        onClick={() => navigate("/notifications")}
+        className="h-11 justify-start gap-3 px-4"
+        variant="ghost"
+      >
+        <Bell size={18} />
+        Notifications
       </Button>
-      <div className="mt-auto">
+      <div className="mt-auto space-y-3">
+        {user && (
+          <div className="rounded-2xl border border-neutral-200 p-3">
+            <p className="truncate text-sm font-semibold">{user.display_name || user.user_name}</p>
+            <p className="truncate text-xs text-neutral-500">@{user.user_name}</p>
+          </div>
+        )}
         <Button
           onClick={handleLogout}
-          className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition-colors"
+          className="w-full justify-start gap-3 px-4"
           variant="outline"
         >
-          LOGOUT
+          <LogOut size={18} />
+          Log out
         </Button>
       </div>
-    </div>
+    </aside>
   );
 }

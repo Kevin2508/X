@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { getProperImageUrl } from "@/utils/imageUtils";
+import { timeAgo } from "@/utils/timeAgo";
 
 interface Reply {
   comment_id: number;
@@ -19,32 +20,18 @@ export function ReplyItem({ reply }: ReplyItemProps) {
   const navigate = useNavigate();
   const initials = (reply.display_name || reply.user_name || "?")[0].toUpperCase();
 
-  function timeAgo(created_at: string): string {
-    const now = new Date();
-    const createdDate = new Date(created_at);
-    const seconds = Math.floor((now.getTime() - createdDate.getTime()) / 1000);
-
-    if (seconds < 60) return "now";
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`;
-    if (seconds < 604800) return `${Math.floor(seconds / 86400)}d`;
-
-    return createdDate.toLocaleDateString();
-  }
-
-
   return (
-    <div className="border-2 border-gray-200 rounded-lg p-3 bg-gray-50 hover:bg-white transition-colors duration-300 ml-6">
+    <div className="ml-6 rounded-2xl border border-neutral-200 bg-neutral-50 p-3 transition-colors hover:bg-white">
       <div className="flex gap-2">
         <button
           onClick={() => navigate(`/profile/${reply.user_name}`)}
           className="hover:opacity-80 transition-opacity duration-200"
         >
-          <Avatar className="w-8 h-8 border-2 border-gray-300 flex-shrink-0">
+          <Avatar className="h-8 w-8 flex-shrink-0">
             {reply.profile_image && (
               <AvatarImage src={getProperImageUrl(reply.profile_image) || ""} alt={reply.display_name} />
             )}
-            <AvatarFallback className="font-black text-xs bg-yellow-100">
+            <AvatarFallback className="text-xs">
               {initials}
             </AvatarFallback>
           </Avatar>
@@ -54,16 +41,16 @@ export function ReplyItem({ reply }: ReplyItemProps) {
           <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={() => navigate(`/profile/${reply.user_name}`)}
-              className="font-bold uppercase text-xs hover:underline transition-all duration-200"
+              className="text-xs font-semibold text-neutral-950 hover:underline"
             >
               {reply.display_name || reply.user_name}
             </button>
-            <span className="text-gray-500 text-xs">@{reply.user_name}</span>
-            <span className="text-gray-400 text-xs">·</span>
-            <span className="text-gray-500 text-xs">{timeAgo(reply.created_at)}</span>
+            <span className="text-xs text-neutral-500">@{reply.user_name}</span>
+            <span className="text-xs text-neutral-300">·</span>
+            <span className="text-xs text-neutral-500">{timeAgo(reply.created_at)}</span>
           </div>
 
-          <p className="text-xs font-bold mt-1 break-words leading-relaxed">
+          <p className="mt-1 break-words text-xs leading-5 text-neutral-700">
             {reply.content}
           </p>
 

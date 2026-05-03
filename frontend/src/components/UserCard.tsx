@@ -52,12 +52,12 @@ export function UserCard({
   return (
     <div
       onClick={() => navigate(`/profile/${user_name}`)}
-      className="border-2 border-gray-300 rounded-xl p-4 hover:border-black transition-all duration-300 hover:shadow-lg cursor-pointer hover:bg-gray-50 bg-white"
+      className="cursor-pointer rounded-2xl border border-neutral-200 bg-white p-3 transition-colors hover:bg-neutral-50"
     >
       <div className="flex gap-3">
-        <Avatar className="w-12 h-12 border-2 border-gray-300 flex-shrink-0">
+        <Avatar className="h-11 w-11 flex-shrink-0">
           {profile_image && <AvatarImage src={getProperImageUrl(profile_image) || ""} alt={display_name} />}
-          <AvatarFallback className="font-black text-sm bg-blue-100">
+          <AvatarFallback className="text-sm">
             {initials}
           </AvatarFallback>
         </Avatar>
@@ -65,18 +65,18 @@ export function UserCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2 mb-1">
             <div className="min-w-0">
-              <p className="font-bold uppercase text-sm truncate">
+              <p className="truncate text-sm font-semibold text-neutral-950">
                 {display_name || user_name}
               </p>
-              <p className="text-gray-500 text-xs truncate">@{user_name}</p>
+              <p className="truncate text-xs text-neutral-500">@{user_name}</p>
             </div>
             <button
               onClick={handleFollowToggle}
               disabled={isLoading}
-              className={`px-3 py-1 text-xs font-bold rounded-full border-2 transition-all duration-200 whitespace-nowrap ${
+              className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors whitespace-nowrap ${
                 following
-                  ? "bg-white text-black border-black hover:bg-red-50"
-                  : "bg-black text-white border-black hover:bg-gray-800"
+                  ? "border-neutral-200 bg-white text-neutral-950 hover:bg-red-50 hover:text-red-600"
+                  : "border-neutral-950 bg-neutral-950 text-white hover:bg-neutral-800"
               } disabled:opacity-50`}
             >
               {following ? "Following" : "Follow"}
@@ -84,7 +84,7 @@ export function UserCard({
           </div>
 
           {bio && (
-            <p className="text-xs font-bold text-gray-600 line-clamp-2 mt-1">
+            <p className="mt-1 line-clamp-2 text-xs leading-5 text-neutral-500">
               {bio}
             </p>
           )}

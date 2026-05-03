@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { userApi } from "@/api/userApi";
 import { useAuth } from "@/context/AuthContext";
 import { UserCard } from "./UserCard";
-import { Card } from "./ui/card";
 import { Input } from "./ui/input";
+import { Search } from "lucide-react";
 
 interface SuggestedUser {
   user_id: number;
@@ -94,16 +94,19 @@ export function RightPanel() {
   };
 
   return (
-    <div className="p-4 space-y-4 border-l-2 border-black">
-      <Input
-        placeholder="Search users..."
-        value={search}
-        onChange={(event) => setSearch(event.target.value)}
-        className="comic-input border-2 border-black font-black uppercase"
-      />
-      <Card className="p-4 comic-card comic-shadow border-2 border-black">
-        <h2 className="font-black text-xl uppercase tracking-wider border-b-2 border-black pb-2 mb-3">
-          Who To Follow
+    <aside className="sticky top-0 h-screen space-y-4 overflow-y-auto bg-neutral-50 p-4">
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+        <Input
+          placeholder="Search users"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          className="pl-9"
+        />
+      </div>
+      <section className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
+        <h2 className="mb-4 text-base font-semibold text-neutral-950">
+          Who to follow
         </h2>
         <div className="space-y-3">
           {loading && (
@@ -130,7 +133,7 @@ export function RightPanel() {
               />
             ))}
         </div>
-      </Card>
-    </div>
+      </section>
+    </aside>
   );
 }
