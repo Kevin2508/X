@@ -12,11 +12,16 @@ import { useState } from "react";
 import API from "@/api/axios";
 import { useAuth } from "@/context/AuthContext";
 
-interface SignInBody {
-  identifier: string;
-  password: string;
-
-  user: any;
+interface SignInResponse {
+  user: {
+    user_id: number;
+    user_name: string;
+    email: string;
+    display_name: string;
+    profile_image?: string;
+    cover_image?: string;
+    bio?: string;
+  };
   token: string;
 }
 
@@ -25,9 +30,9 @@ export default function LoginPage() {
   const { login } = useAuth();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
-  const [error,setError] = useState("");
+  const [error, setError] = useState("");
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const formData = {
@@ -36,24 +41,20 @@ export default function LoginPage() {
     };
 
     try {
-      const res = await API.post<SignInBody>("/auth/signin", formData);
+      const res = await API.post<SignInResponse>("/auth/signin", formData);
       const { user, token } = res.data;
       if (!user || !token) {
         setError("Invalid response from server");
         return;
       }
-      const result = res;
-      console.log(result);
-      if (result) {
+      if (res) {
         setIdentifier("");
-
         setPassword("");
-
         login(user, token);
         navigate("/home");
       }
-    } catch (err) {
-      const errorMsg = err.response?.data?.message || "Login failed";
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : "Login failed";
       setError(errorMsg);
       console.error("Login error:", err);
     }
@@ -79,6 +80,11 @@ export default function LoginPage() {
             </CardHeader>
 
             <CardContent className="space-y-4">
+              {error && (
+                <div className="bg-red-50 border-2 border-red-500 text-red-600 p-3 rounded font-bold">
+                  {error}
+                </div>
+              )}
               <div className="space-y-2">
                 <Label className="font-black uppercase">📧 Enter username or email</Label>
                 <Input

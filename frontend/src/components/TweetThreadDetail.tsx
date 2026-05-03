@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { X, Heart, MessageCircle, Repeat2, Share, Loader2 } from "lucide-react";
+import { X, Heart, MessageCircle, Repeat2, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { commentApi } from "@/api/commentApi";
 import { CommentItem } from "./CommentItem";

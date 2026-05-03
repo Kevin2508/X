@@ -24,6 +24,7 @@ export function EditProfileModal({
   onClose,
   onProfileUpdate,
 }: EditProfileModalProps) {
+  const normalizePreview = (value: string | null): string | undefined => value ?? undefined;
   const [displayName, setDisplayName] = useState(user.display_name);
   const [bio, setBio] = useState(user.bio || "");
   const [country, setCountry] = useState(user.country || "");
@@ -107,8 +108,8 @@ export function EditProfileModal({
       ) {
         await userApi.updateProfile({
           display_name: displayName,
-          bio: bio || null,
-          country: country || null,
+          bio: bio || undefined,
+          country: country || undefined,
         });
       }
 
@@ -180,7 +181,7 @@ export function EditProfileModal({
               >
                 {coverImagePreview && (
                   <img
-                    src={coverImagePreview}
+                    src={normalizePreview(coverImagePreview)}
                     alt="cover preview"
                     className="w-full h-full object-cover"
                   />
@@ -216,7 +217,7 @@ export function EditProfileModal({
                   <Avatar className="w-24 h-24 border-4 border-black shrink-0 group/avatar">
                     {profileImagePreview && (
                       <AvatarImage
-                        src={profileImagePreview}
+                        src={normalizePreview(profileImagePreview)}
                         alt="profile preview"
                       />
                     )}

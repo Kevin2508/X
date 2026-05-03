@@ -1,16 +1,14 @@
-import { useContext } from "react";
+import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "@/context/AuthContext";
 import { Button } from "./ui/button";
 
 export default function Sidebar() {
   const navigate = useNavigate();
-  const authContext = useContext(AuthContext);
-  const currentUser = authContext?.user;
+  const { user, logout } = useAuth(); // Use the hook instead
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
+    logout();
+    // Redirect to login happens automatically via ProtectedRoute
   };
 
   return (
@@ -27,8 +25,8 @@ export default function Sidebar() {
       </Button>
       <Button
         onClick={() => {
-          if (currentUser?.user_name) {
-            navigate(`/profile/${currentUser.user_name}`);
+          if (user?.user_name) {
+            navigate(`/profile/${user.user_name}`);
           }
         }}
         className="comic-btn justify-start"
@@ -39,13 +37,15 @@ export default function Sidebar() {
       <Button className="comic-btn justify-start" variant="outline">
         NOTIFICATIONS
       </Button>
-      <Button
-        onClick={handleLogout}
-        className="comic-btn justify-start bg-black text-white mt-4"
-        variant="outline"
-      >
-        LOGOUT
-      </Button>
+      <div className="mt-auto">
+        <Button
+          onClick={handleLogout}
+          className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition-colors"
+          variant="outline"
+        >
+          LOGOUT
+        </Button>
+      </div>
     </div>
   );
 }

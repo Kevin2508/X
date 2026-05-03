@@ -1,17 +1,21 @@
 import API from "@/api/axios";
+import type { AxiosError } from "axios";
 import { useState } from "react";
+
+interface CreateTweetPayload {
+  content: string;
+  image?: File;
+}
+
+interface ApiErrorResponse {
+  message?: string;
+}
 
 export function useTweets() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const createTweet = async ({
-    content,
-    image,
-  }: {
-    content: string;
-    image?: File;
-  }) => {
+  const createTweet = async ({ content, image }: CreateTweetPayload) => {
     setLoading(true);
     setError("");
     try {
@@ -22,12 +26,14 @@ export function useTweets() {
       }
       const res = await API.post("/tweets/", formData, {
         headers: {
-          "Content-Type": "multipart/from-data",
+          "Content-Type": "multipart/form-data",
         },
       });
-      return res;
-    } catch (err) {
-      const message = err.response?.data?.message || "Failed to post tweet";
+      return res.data;
+    } catch (err: unknown) {
+      const message =
+        (err as AxiosError<ApiErrorResponse>).response?.data?.message ||
+        "Failed to post tweet";
       setError(message);
       return null;
     } finally {
@@ -42,8 +48,10 @@ export function useTweets() {
       const res = await API.get("/feed/");
       
       return res.data;
-    } catch (err) {
-      const message = err.response?.data?.message || "Failed to post tweet";
+    } catch (err: unknown) {
+      const message =
+        (err as AxiosError<ApiErrorResponse>).response?.data?.message ||
+        "Failed to fetch tweets";
       setError(message);
       return null;
     } finally {

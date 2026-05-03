@@ -15,6 +15,7 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   login: (user: User, token: string) => void;
   logout: () => void;
   setUser: (user: User) => void;
@@ -27,50 +28,65 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUserState] = useState<User | null>(null);
   const [token, setTokenState] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // On app load, restore user from localStorage if token exists
   useEffect(() => {
-    const savedToken = localStorage.getItem('token');
-    const savedUser = localStorage.getItem('user');
-    
-    if (savedToken && savedUser) {
+    const restoreAuth = () => {
       try {
-        setTokenState(savedToken);
-        setUserState(JSON.parse(savedUser));
+        const savedToken = localStorage.getItem('token');
+        const savedUser = localStorage.getItem('user');
+
+        console.log('Restoring auth...', { savedToken: !!savedToken, savedUser: !!savedUser });
+
+        if (savedToken && savedUser) {
+          setTokenState(savedToken);
+          setUserState(JSON.parse(savedUser));
+        }
       } catch (error) {
-        console.warn('Clearing corrupted auth data');
-        // Only remove auth-related items, not everything
+        console.error('Failed to restore auth:', error);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+      } finally {
+        // Mark loading as complete AFTER trying to restore
+        setIsLoading(false);
       }
-    }
-  }, []);
+    };
 
-  const login = (user: User, token: string) => {
-    setUserState(user);
-    setTokenState(token);
-    
-    // Persist to localStorage (survive page refresh)
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
+    restoreAuth();
+  }, []); // Run only once on mount
+
+  const login = (newUser: User, newToken: string) => {
+    setUserState(newUser);
+    setTokenState(newToken);
+    localStorage.setItem('token', newToken);
+    localStorage.setItem('user', JSON.stringify(newUser));
   };
 
   const logout = () => {
     setUserState(null);
     setTokenState(null);
-    
-    // Clear only auth-related localStorage items
     localStorage.removeItem('token');
     localStorage.removeItem('user');
   };
 
-  const setUser = (user: User) => {
-    setUserState(user);
-    localStorage.setItem('user', JSON.stringify(user));
+  const setUser = (updatedUser: User) => {
+    setUserState(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isAuthenticated: !!user && !!token, login, logout, setUser }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        isAuthenticated: !!user && !!token,
+        isLoading,
+        login,
+        logout,
+        setUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -35,9 +35,8 @@ export function CommentItem({ comment, onCommentRefresh }: CommentItemProps) {
   const [replyText, setReplyText] = useState("");
   const [isSubmittingReply, setIsSubmittingReply] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
-  const [replies, setReplies] = useState<Reply[]>(comment.replies || []);
+  const [replies] = useState<Reply[]>(comment.replies || []);
   const replyInputRef = useRef<HTMLTextAreaElement>(null);
-  const [isLoading, setIsLoading] = useState(false);
 
   const initials = (comment.display_name || comment.user_name || "?")[0].toUpperCase();
 

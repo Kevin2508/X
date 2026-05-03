@@ -9,18 +9,20 @@ interface TweetFormProps{
   onTweetCreated?:(tweet:any)=>void;
 }
 export function TweetForm({ onTweetCreated }: TweetFormProps) {
-  const user = useAuth();
+  const { user } = useAuth();
   const { createTweet, loading, error } = useTweets();
 
   const [content, setContent] = useState("");
-  const [image, setImage] = useState("");
+  const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState("");
-  const fileInputRef = useRef("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const removeImage = () => {
-    setImage("");
+    setImage(null);
     setPreview("");
-    fileInputRef.current.value = "";
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,18 +36,9 @@ export function TweetForm({ onTweetCreated }: TweetFormProps) {
   };
 
   const handleSubmit = async () => {
-    if (!content.trim) return;
+    if (!content.trim()) return;
     try {
-      // Create FormData for file upload
-      const formData = new FormData();
-      formData.append("content", content);
-      
-      // Only append file if one exists
-      if (image) {
-        formData.append("file", image);
-      }
-
-      const newTweet = await createTweet(formData);
+      const newTweet = await createTweet({ content, image: image ?? undefined });
 
       if (newTweet) {
         setContent("");
@@ -56,15 +49,8 @@ export function TweetForm({ onTweetCreated }: TweetFormProps) {
           onTweetCreated(newTweet);
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.log(err);
-    }
-    const newTweet = await createTweet({ content, image });
-
-    if (newTweet) {
-      setContent("");
-      removeImage();
-      onTweetCreated(newTweet);
     }
   };
   return (
@@ -72,7 +58,7 @@ export function TweetForm({ onTweetCreated }: TweetFormProps) {
       <div className="flex gap-3">
         <Avatar>
           <AvatarFallback className="font-black uppercase text-lg">
-            U
+            {(user?.display_name || user?.user_name || "U")[0].toUpperCase()}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 space-y-3">
@@ -105,7 +91,7 @@ export function TweetForm({ onTweetCreated }: TweetFormProps) {
         <div className="flex items-center justify-between border-t pt-3">
           {/* Image Upload Button */}
           <button
-            onClick={() => fileInputRef.current.click()}
+            onClick={() => fileInputRef.current?.click()}
             className="text-blue-500 hover:text-blue-400 text-sm"
           >
             📷 Photo

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useContext } from "react";
-import { AuthContext } from "@/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import { userApi } from "@/api/userApi";
 import { ProfileHeader } from "@/components/ProfileHeader";
 import { ProfileTabs } from "@/components/ProfileTabs";
@@ -26,8 +25,7 @@ interface UserProfile {
 export function ProfilePage() {
   const { username } = useParams<{ username: string }>();
   const navigate = useNavigate();
-  const authContext = useContext(AuthContext);
-  const currentUser = authContext?.user;
+  const { user: currentUser } = useAuth();
 
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -130,7 +128,7 @@ export function ProfilePage() {
     setIsEditModalOpen(true);
   };
 
-  const handleProfileUpdate = (updatedUser: any) => {
+  const handleProfileUpdate = (updatedUser: UserProfile) => {
     setUser(updatedUser);
   };
 

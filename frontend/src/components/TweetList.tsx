@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { TweetCard } from "./TweetCard";
-import { useAuth } from "@/context/AuthContext";
 import { useTweets } from "@/hooks/useTweets";
 type MediaType = "image" | "video" | null;
 interface Tweet {
@@ -27,11 +26,11 @@ export function TweetList() {
     useEffect(()=>{
       const fetchTweets = async()=>{
         const data = await getTweets();
-        setTweets(data)
+        setTweets(data ?? [])
         
       }
       fetchTweets();
-    },[]);
+    },[getTweets]);
         
     if (loading) {
     return (
@@ -68,15 +67,15 @@ export function TweetList() {
             user_name={tweet.user_name}
             display_name={tweet.display_name}
             content={tweet.content}
-            created_at={tweet.content}
+            created_at={tweet.created_at}
             profile_image={tweet.profile_image || ""}
             media={tweet.media || ""}
-            media_type={tweet.media_type || "image"}
+            media_type={tweet.media_type ?? null}
             like_count={tweet.like_count}
             retweet_count={tweet.retweet_count}
             isLiked={tweet.isLiked}
             isRetweeted = {tweet.isRetweeted}
-            type="tweet"
+            type={tweet.type === "retweet" ? "repost" : "tweet"}
           ></TweetCard>
         ))
        }
