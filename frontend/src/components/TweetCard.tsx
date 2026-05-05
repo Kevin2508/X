@@ -9,8 +9,6 @@ import { getProperImageUrl } from "@/utils/imageUtils";
 import { useAuth } from "@/context/AuthContext";
 import { timeAgo } from "@/utils/timeAgo";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 type MediaType = "image" | "video" | null;
 type TweetType = "tweet" | "repost";
 
@@ -42,24 +40,17 @@ interface TweetCardProps {
   onDelete?: (tweetId: number) => void;
 }
 
-// ─── Helper ──────────────────────────────────────────────────────────────────
-
 function getMediaUrl(mediaPath: string | null | undefined): string | null {
   if (!mediaPath) return null;
 
-  // If it's already a URL, return it
   if (mediaPath.startsWith("http://") || mediaPath.startsWith("https://")) {
     return mediaPath;
   }
 
-  // If it's a local file path, extract filename and construct API URL
   if (mediaPath.includes("uploads")) {
-    // Extract filename from path
-    // e.g., "E:\\My Projects\\X\\backend\\src\\uploads\\file-1777571813138-221684312.jpg"
-    // becomes "file-1777571813138-221684312.jpg"
+
     const filename = mediaPath.split(/[\\/]/).pop();
     if (filename) {
-      // Construct full URL from your API base
       const apiBase = "http://localhost:3000";
       return `${apiBase}/uploads/${filename}`;
     }
@@ -68,7 +59,6 @@ function getMediaUrl(mediaPath: string | null | undefined): string | null {
   return null;
 }
 
-// ─── Component ───────────────────────────────────────────────────────────────
 
 export function TweetCard({
     tweet_id,
