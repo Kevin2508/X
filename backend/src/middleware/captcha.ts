@@ -1,5 +1,4 @@
 import svgCaptcha from 'svg-captcha';
-import session from 'express-session';
 import { Request, Response } from 'express';
 
 declare module "express-session" {
@@ -10,7 +9,6 @@ declare module "express-session" {
 
 export const authCaptcha = async(req:Request,res:Response)=>{
 
-  // Check if user requested a refresh (new captcha)
   const refresh = req.query.refresh === 'true';
 
   if((req.session as any).captcha && (req.session as any).captchaImage && !refresh){
@@ -19,7 +17,6 @@ export const authCaptcha = async(req:Request,res:Response)=>{
     return;
   }
   
-  // Generate a new captcha
   const captcha = svgCaptcha.create({
     size: 4,
     noise: 2,

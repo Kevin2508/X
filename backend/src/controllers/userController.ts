@@ -120,6 +120,7 @@ export const updateProfile = async (req: AuthenticatedRequest, res: Response) =>
     return res.status(500).json({ error: error.message });
   }
 };
+
 // UPDATE COVER PIC
  export const updateCoverPic= async (req:AuthenticatedRequest , res:Response) => {
   console.log(req.file?.path);

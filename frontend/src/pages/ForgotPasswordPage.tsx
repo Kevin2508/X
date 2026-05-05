@@ -58,7 +58,7 @@ export default function ForgotPasswordPage() {
             Reset Password
           </h1>
           <p className="max-w-sm text-lg leading-8 text-neutral-500">
-            Enter your account email to create a short password reset session.
+            Enter your email.
           </p>
         </div>
 
@@ -66,7 +66,7 @@ export default function ForgotPasswordPage() {
           <Card className="w-full border-neutral-200 p-2 shadow-sm">
             <CardHeader>
               <CardTitle className="text-2xl font-semibold tracking-tight">
-                Account Email
+                Email
               </CardTitle>
             </CardHeader>
 
@@ -105,7 +105,7 @@ export default function ForgotPasswordPage() {
                 className="flex items-center justify-center gap-2 border-t border-neutral-100 pt-4 text-sm font-medium text-neutral-950 hover:underline"
               >
                 <ArrowLeft className="h-4 w-4" />
-                Back to login
+                login
               </Link>
             </CardContent>
           </Card>

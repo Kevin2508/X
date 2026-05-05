@@ -2,6 +2,7 @@ create
 DATABASE x_db;
 use x_db;
 set GLOBAL time_zone = "+00:00";
+set time_zone = "+00:00";
 select @@GLOBAL.time_zone, @@session.time_zone;
 create table users(
     user_id BIGINT AUTO_INCREMENT PRIMARY KEY,

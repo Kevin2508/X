@@ -120,9 +120,7 @@ export default function VerifyOtpPage() {
           <h1 className="mb-4 text-5xl font-semibold tracking-tight text-neutral-950">
             Verify OTP
           </h1>
-          <p className="max-w-sm text-lg leading-8 text-neutral-500">
-            Complete the reset before the timer reaches zero.
-          </p>
+          
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -138,7 +136,7 @@ export default function VerifyOtpPage() {
                 <div className="rounded-2xl border border-neutral-200 p-3">
                   <div className="flex items-center gap-2 text-sm font-medium text-neutral-500">
                     <ShieldCheck className="h-4 w-4" />
-                    Demo OTP
+                    OTP
                   </div>
                   <div className="mt-2 text-3xl font-semibold tracking-widest">
                     {resetState.otp}
@@ -155,9 +153,7 @@ export default function VerifyOtpPage() {
                 </div>
               </div>
 
-              <div className="rounded-xl border border-neutral-200 p-3 text-sm text-neutral-600">
-                Resetting password for {resetState.email}
-              </div>
+              
 
               {error && (
                 <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-600">
@@ -188,7 +184,6 @@ export default function VerifyOtpPage() {
               <div className="space-y-2">
                 <Label>New Password</Label>
                 <div className="relative">
-                  <KeyRound className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
                   <Input
                     type="password"
                     placeholder="Enter new password"

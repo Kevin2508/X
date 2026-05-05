@@ -113,7 +113,7 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
     );
 
     if (rows.length === 0) {
-      return res.status(404).json({ message: "No account found with this email" });
+      return res.status(404).json({ message: "Account does not exists" });
     }
 
     const resetToken = createResetToken();
@@ -148,7 +148,7 @@ export const resetPasswordWithOtp = async (req: Request, res: Response) => {
     }
 
     if (password.length < 6) {
-      return res.status(400).json({ message: "Password must be at least 6 characters" });
+      return res.status(400).json({ message: "Password must more than 5 characters" });
     }
 
     const resetSession = passwordResetSessions.get(resetToken);
@@ -195,4 +195,4 @@ export const resetPasswordWithOtp = async (req: Request, res: Response) => {
     return res.status(500).json({ message: "Unable to reset password" });
   }
 };
-// comit check
+// commit check

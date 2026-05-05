@@ -28,7 +28,7 @@ interface SignInResponse {
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const  {login}  = useAuth();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
@@ -62,7 +62,6 @@ export default function LoginPage() {
       setError(errorMsg);
       console.error("Login error:", err);
     }
-    // const result = await registerUser({user_name:user_name, email:email, password:password});
   };
 
   return (
