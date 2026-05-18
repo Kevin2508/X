@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
 import { isAxiosError } from "axios";
-import { ArrowLeft, KeyRound, ShieldCheck, TimerReset } from "lucide-react";
+import { ArrowLeft, ShieldCheck, TimerReset } from "lucide-react";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 

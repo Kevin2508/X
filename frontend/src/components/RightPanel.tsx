@@ -16,9 +16,27 @@ interface SuggestedUser {
 export function RightPanel() {
   const { user } = useAuth();
   const [users, setUsers] = useState<SuggestedUser[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<SuggestedUser[]>([]);
+  const [followingIds, setFollowingIds] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+
+  const normalizedQuery = search.trim().toLowerCase();
+  const isSearching = normalizedQuery.length > 0;
+  const visibleUsers = users.filter((candidate) => {
+    if (!isSearching) {
+      return !followingIds.has(candidate.user_id);
+    }
+
+    const displayName = candidate.display_name?.toLowerCase() ?? "";
+    const userName = candidate.user_name?.toLowerCase() ?? "";
+    const bio = candidate.bio?.toLowerCase() ?? "";
+
+    return (
+      displayName.includes(normalizedQuery) ||
+      userName.includes(normalizedQuery) ||
+      bio.includes(normalizedQuery)
+    );
+  });
 
   useEffect(() => {
     const fetchSuggestedUsers = async () => {
@@ -33,22 +51,20 @@ export function RightPanel() {
           ? allUsersResponse.result
           : [];
         const following = Array.isArray(followingResponse) ? followingResponse : [];
-        const followingIds = new Set(
+        const nextFollowingIds = new Set<number>(
           following.map((followedUser: SuggestedUser) => followedUser.user_id),
         );
 
-        const suggestedUsers = allUsers.filter(
-          (candidate: SuggestedUser) =>
-            candidate.user_id !== user?.user_id &&
-            !followingIds.has(candidate.user_id),
+        setUsers(
+          allUsers.filter(
+            (candidate: SuggestedUser) => candidate.user_id !== user?.user_id,
+          ),
         );
-
-        setUsers(suggestedUsers);
-        setFilteredUsers(suggestedUsers);
+        setFollowingIds(nextFollowingIds);
       } catch (error) {
         console.error("Failed to fetch suggested users:", error);
         setUsers([]);
-        setFilteredUsers([]);
+        setFollowingIds(new Set());
       } finally {
         setLoading(false);
       }
@@ -57,40 +73,18 @@ export function RightPanel() {
     fetchSuggestedUsers();
   }, [user]);
 
-  useEffect(() => {
-    const normalizedQuery = search.trim().toLowerCase();
-
-    if (!normalizedQuery) {
-      setFilteredUsers(users);
-      return;
-    }
-
-    setFilteredUsers(
-      users.filter((candidate) => {
-        const displayName = candidate.display_name?.toLowerCase() ?? "";
-        const userName = candidate.user_name?.toLowerCase() ?? "";
-        const bio = candidate.bio?.toLowerCase() ?? "";
-
-        return (
-          displayName.includes(normalizedQuery) ||
-          userName.includes(normalizedQuery) ||
-          bio.includes(normalizedQuery)
-        );
-      }),
-    );
-  }, [search, users]);
-
   const handleFollowedUser = (userId: number, isFollowing: boolean) => {
-    if (!isFollowing) {
-      return;
-    }
+    setFollowingIds((currentIds) => {
+      const nextIds = new Set(currentIds);
 
-    setUsers((currentUsers) =>
-      currentUsers.filter((candidate) => candidate.user_id !== userId),
-    );
-    setFilteredUsers((currentUsers) =>
-      currentUsers.filter((candidate) => candidate.user_id !== userId),
-    );
+      if (isFollowing) {
+        nextIds.add(userId);
+      } else {
+        nextIds.delete(userId);
+      }
+
+      return nextIds;
+    });
   };
 
   return (
@@ -106,27 +100,27 @@ export function RightPanel() {
       </div>
       <section className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
         <h2 className="mb-4 text-base font-semibold text-neutral-950">
-          Who to follow
+          {isSearching ? "Search results" : "Who to follow"}
         </h2>
         <div className="space-y-3">
           {loading && (
             <p className="text-sm font-bold text-gray-500">Loading users...</p>
           )}
-          {!loading && filteredUsers.length === 0 && (
+          {!loading && visibleUsers.length === 0 && (
             <p className="text-sm font-bold text-gray-500">
-              No unfollowed users found.
+              {isSearching ? "No users found." : "No unfollowed users found."}
             </p>
           )}
           {!loading &&
-            filteredUsers.map((candidate) => (
+            visibleUsers.map((candidate) => (
               <UserCard
-                key={candidate.user_id}
+                key={`${candidate.user_id}-${followingIds.has(candidate.user_id)}`}
                 user_id={candidate.user_id}
                 user_name={candidate.user_name}
                 display_name={candidate.display_name}
                 profile_image={candidate.profile_image}
                 bio={candidate.bio ?? undefined}
-                isFollowing={false}
+                isFollowing={followingIds.has(candidate.user_id)}
                 onFollowChange={(isFollowing) =>
                   handleFollowedUser(candidate.user_id, isFollowing)
                 }
